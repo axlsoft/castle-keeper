@@ -1,6 +1,5 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import { theme } from "../lib/stores/themeStore";
 
   let name = "";
   let greetMsg = "";
