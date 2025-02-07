@@ -1,6 +1,3 @@
-use tauri_plugin_store::StoreBuilder;
-
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> Result<String, String> {
     if name.trim().is_empty() {
