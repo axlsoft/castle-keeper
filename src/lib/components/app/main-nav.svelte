@@ -1,10 +1,12 @@
 <script lang="ts">
     import { page } from "$app/state";
     import { cn } from "$lib/utils.js";
+    import logo from "./icons/logo.png";
 </script>
 
 <div class="mr-4 hidden md:flex">
     <a href="/" class="mr-6 flex items-center space-x-2">
+        <img src="{logo}" alt="Castle Keeper" class="size-6" />
         <span class="hidden font-bold xl:inline-block p-2">
             Castle Keeper
         </span>
