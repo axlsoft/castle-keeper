@@ -2,19 +2,14 @@
     import type { PageData } from "./$types";
 
     import { onMount } from "svelte";
-    import { theme, store } from "../../lib/stores/themeStore";
 
     let themeValue = $state("");
 
     async function saveSettings(e: Event) {
         e.preventDefault();
-
-        theme.set(themeValue);
     }
 
-    onMount(async () => {
-        themeValue = (await store.get("theme")) || "light";
-    });
+    onMount(async () => {});
 
     let { data }: { data: PageData } = $props();
 </script>
