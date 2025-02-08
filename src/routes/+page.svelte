@@ -10,7 +10,10 @@
     event.preventDefault();
     try {
       const greetMsg: string = await invoke("greet", { name });
-      toast.success(greetMsg);
+      const publishResult: string = await invoke("send_message", {
+        message: name,
+      });
+      toast.success(publishResult);
       name = "";
     } catch (error: any) {
       toast.error(error);
