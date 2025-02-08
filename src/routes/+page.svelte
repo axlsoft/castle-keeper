@@ -1,50 +1,28 @@
 <script lang="ts">
+  import { Button } from "$lib/components/ui/button";
+  import Input from "@/components/ui/input/input.svelte";
   import { invoke } from "@tauri-apps/api/core";
+  import { toast } from "svelte-sonner";
 
   let name = "";
-  let greetMsg = "";
 
   async function greet(event: Event) {
     event.preventDefault();
     try {
-      greetMsg = await invoke("greet", { name });
+      const greetMsg: string = await invoke("greet", { name });
+      toast.success(greetMsg);
+      name = "";
     } catch (error: any) {
-      greetMsg = error.message;
+      toast.error(error);
     }
   }
 </script>
 
-<main class="container">
-  <h1>Castle Keeper</h1>
-
-  <form on:submit={greet}>
-    <input type="text" bind:value={name} placeholder="Enter your name" />
-    <button type="submit">Greet</button>
+<main
+  class="container mx-auto flex flex-col items-center justify-center h-screen text-center"
+>
+  <form onsubmit={greet} class="flex w-full max-w-sm items-center space-x-2">
+    <Input type="text" bind:value={name} placeholder="Enter your name" />
+    <Button type="submit">Greet</Button>
   </form>
-
-  <p>{greetMsg}</p>
-
-  <a href="/settings">Go to Settings</a>
 </main>
-
-<style>
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    text-align: center;
-  }
-
-  input,
-  button {
-    margin: 0.5em;
-    padding: 0.5em;
-    font-size: 1em;
-  }
-
-  button {
-    cursor: pointer;
-  }
-</style>

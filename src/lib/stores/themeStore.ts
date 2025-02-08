@@ -6,7 +6,8 @@ export let store: Store;
 export const theme = writable("light");
 
 async function loadTheme() {
-  store = await Store.load(".settings.dat");
+  console.log("Loading theme");
+  store = await Store.load(".settings.json");
   let savedTheme = await store.get<string>("theme");
   if (savedTheme) {
     theme.set(savedTheme);
@@ -15,17 +16,16 @@ async function loadTheme() {
   else {
     detectSystemTheme();
   }
+
+  theme.subscribe(async (value) => {
+    document.documentElement.setAttribute("data-theme", value);
+    if (await store?.get("theme") === value) return;
+    await store.set("theme", value);
+    await store.save();
+  });
+
 }
 
-// Save theme when it changes
-theme.subscribe(async (value) => {
-  document.documentElement.setAttribute("data-theme", value);
-  if (await store.get("theme") === value) return;
-  await store.set("theme", value);
-  await store.save();
-});
-
-// Detect system preference
 export async function detectSystemTheme() {
   const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   theme.set(systemPrefersDark ? "dark" : "light");
