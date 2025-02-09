@@ -4,7 +4,6 @@ use rdkafka::{admin::AdminClient, client::DefaultClientContext, ClientConfig};
 
 #[tauri::command]
 pub async fn get_topics() -> Result<Vec<String>, String> {
-    // use rdkafka::admin::AdminClient;
     let admin_client: AdminClient<DefaultClientContext> = ClientConfig::new()
         .set("bootstrap.servers", "localhost:9092")
         .create()

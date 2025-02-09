@@ -1,19 +1,30 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import Input from "@/components/ui/input/input.svelte";
-  import { invoke } from "@tauri-apps/api/core";
+  import { send_ipc } from "@/ipc-service";
+  import {
+    KafkaMessageType,
+    type KafkaMessageRequest,
+    type KafkaMessageResponse,
+  } from "@/model/kafka_message";
+
   import { toast } from "svelte-sonner";
 
   let name = "";
 
   async function greet(event: Event) {
     event.preventDefault();
+    const m: KafkaMessageRequest = {
+      key: "greet",
+      value: name,
+      metadata: {
+        message_type: KafkaMessageType.Json,
+      },
+    };
     try {
-      const greetMsg: string = await invoke("greet", { name });
-      const publishResult: string = await invoke("send_message", {
-        message: name,
-      });
-      toast.success(publishResult);
+      const publishResult: KafkaMessageResponse = await send_ipc("send_message", {message:m});
+      const successMessage = `Created new message at ${publishResult.offset} on partition ${publishResult.partition} `;
+      toast.success(successMessage);
       name = "";
     } catch (error: any) {
       toast.error(error);
