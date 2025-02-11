@@ -26,7 +26,7 @@
     "@tailwindcss/postcss": "^4.0.6",
     "@tailwindcss/vite": "^4.0.0",
     "@tauri-apps/cli": "^2",
-    "bits-ui": "^1.0.0-next.89",
+    "bits-ui": "^1.0.0-next.94",
     "clsx": "^2.1.1",
     "lucide-svelte": "^0.475.0",
     "mode-watcher": "^0.5.1",
