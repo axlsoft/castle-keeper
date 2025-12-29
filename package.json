@@ -20,7 +20,7 @@
     "postcss": "^8.5.3"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^3.0.6",
+    "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.22.2",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tailwindcss/postcss": "^4.1.16",
