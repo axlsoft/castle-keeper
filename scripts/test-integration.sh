@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Starts the local brokers (plaintext + SASL) and runs the Rust test suite
-# against them. The brokers are left running; stop them with
+# Starts the local brokers (plaintext + SASL), seeds the plaintext one with
+# scripts/seed.sh, and runs the Rust test suite against them. The brokers are left running; stop them with
 # `docker compose --profile sasl down`.
 set -euo pipefail
 
@@ -20,6 +20,8 @@ for _ in $(seq 1 30); do
   sleep 1
 done
 
+bash scripts/seed.sh
+
 cd src-tauri
-CK_IT_BOOTSTRAP=127.0.0.1:9092 CK_IT_SASL_BOOTSTRAP=127.0.0.1:9094 \
+CK_IT_BOOTSTRAP=127.0.0.1:9092 CK_IT_SASL_BOOTSTRAP=127.0.0.1:9094 CK_IT_SEEDED=1 \
   cargo test "$@" -- --test-threads=1
