@@ -57,6 +57,17 @@
             Schemas
         </a>
         <a
+            href="/connections"
+            class={cn(
+                "hover:text-foreground/80 transition-colors",
+                page.url.pathname === "/connections"
+                    ? "text-foreground"
+                    : "text-foreground/60",
+            )}
+        >
+            Connections
+        </a>
+        <a
             href="/settings"
             class={cn(
                 "hover:text-foreground/80 transition-colors",
