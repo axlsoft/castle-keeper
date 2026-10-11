@@ -14,14 +14,23 @@ use crate::{
 pub struct ProfileList {
     pub profiles: Vec<Profile>,
     pub active_id: Option<String>,
+    /// Profiles whose read-only flag is lifted for this session.
+    pub unlocked_ids: Vec<String>,
 }
 
 #[tauri::command]
 #[specta::specta]
 pub fn list_profiles(state: State<'_, AppState>) -> AppResult<ProfileList> {
+    let profiles = state.profiles.list()?;
+    let unlocked_ids = profiles
+        .iter()
+        .filter(|p| state.guard.session().is_unlocked(&p.id))
+        .map(|p| p.id.clone())
+        .collect();
     Ok(ProfileList {
-        profiles: state.profiles.list()?,
+        profiles,
         active_id: state.profiles.active()?.map(|p| p.id),
+        unlocked_ids,
     })
 }
 
@@ -56,7 +65,7 @@ pub fn delete_profile(state: State<'_, AppState>, id: String) -> AppResult<()> {
 #[tauri::command]
 #[specta::specta]
 pub fn select_profile(state: State<'_, AppState>, id: String) -> AppResult<Profile> {
-    let profile = state.profiles.set_active(&id)?;
+    let profile = state.select_profile(&id)?;
     tracing::info!(profile = %profile.name, "connection selected");
     Ok(profile)
 }

@@ -4,6 +4,7 @@
 use std::sync::Arc;
 
 use castle_keeper_lib::{
+    audit::ActionLog,
     kafka::connection::test_connection,
     profiles::{Environment, ProfileInput, ProfileStore, SaslConfig, SaslMechanism, TlsConfig},
     secrets::MemoryStore,
@@ -20,6 +21,7 @@ async fn scram_profile_connects_with_stored_password() {
     let state = AppState::new(
         ProfileStore::load(dir.path().join("profiles.json")).unwrap(),
         Arc::new(MemoryStore::default()),
+        ActionLog::new(dir.path().join("actions.jsonl")),
     );
     state
         .create_profile(ProfileInput {

@@ -3,17 +3,58 @@
 //! set (e.g. `127.0.0.1:9092` from `docker compose up -d --wait`); the
 //! broker-down tests use a closed local port and always run.
 
-use std::time::{Duration, Instant};
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 use castle_keeper_lib::{
+    audit::{ActionLog, Outcome, WriteAction},
     error::ErrorKind,
+    guard::{SessionLocks, WriteGuard, WriteRequest, WriteTicket},
     kafka::{
         manager::ClientManager,
         produce::{produce, ProduceRequest},
         settings::ConnectionSettings,
         topics::list_topic_names,
     },
+    profiles::{Environment, Profile, TlsConfig},
 };
+
+fn profile(environment: Environment, read_only: bool) -> Profile {
+    Profile {
+        id: "it".into(),
+        name: "it-profile".into(),
+        environment,
+        bootstrap: CLOSED_PORT.into(),
+        sasl: None,
+        tls: TlsConfig::default(),
+        read_only,
+        admin_timeout_ms: 2_000,
+        delivery_timeout_ms: 2_000,
+    }
+}
+
+fn guard(dir: &tempfile::TempDir) -> WriteGuard {
+    WriteGuard::new(
+        Arc::new(ActionLog::new(dir.path().join("actions.jsonl"))),
+        Arc::new(SessionLocks::default()),
+    )
+}
+
+fn ticket(guard: &WriteGuard, topic: &str, dry_run: bool) -> WriteTicket {
+    guard
+        .authorize(
+            &profile(Environment::Local, false),
+            WriteRequest {
+                action: WriteAction::Produce,
+                target: topic.into(),
+                dry_run,
+                confirmation: None,
+            },
+        )
+        .unwrap()
+}
 
 /// A local port nothing listens on, so connections are refused immediately.
 const CLOSED_PORT: &str = "127.0.0.1:1";
@@ -85,8 +126,12 @@ async fn broker_down_produce_fails_within_the_delivery_timeout() {
         value: "v".into(),
         headers: vec![],
     };
+    let dir = tempfile::tempdir().unwrap();
+    let guard = guard(&dir);
     let started = Instant::now();
-    let error = produce(&clients, &request).await.unwrap_err();
+    let error = produce(&clients, &request, ticket(&guard, "anything", false))
+        .await
+        .unwrap_err();
     assert!(
         matches!(error.kind, ErrorKind::Timeout | ErrorKind::Unreachable),
         "unexpected error: {error:?}"
@@ -96,6 +141,84 @@ async fn broker_down_produce_fails_within_the_delivery_timeout() {
         "took {:?}",
         started.elapsed()
     );
+    let logged = guard.log().recent(1).unwrap();
+    assert_eq!(logged[0].outcome, Outcome::Failed);
+}
+
+#[tokio::test]
+async fn read_only_profile_blocks_produce_and_logs_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let guard = guard(&dir);
+    let prod = profile(Environment::Prod, true);
+    let error = guard
+        .authorize(
+            &prod,
+            WriteRequest {
+                action: WriteAction::Produce,
+                target: "orders".into(),
+                dry_run: false,
+                confirmation: Some("it-profile".into()),
+            },
+        )
+        .err()
+        .unwrap();
+    assert_eq!(error.kind, ErrorKind::ReadOnly);
+    let logged = guard.log().recent(1).unwrap();
+    assert_eq!(
+        (logged[0].outcome, logged[0].target.as_str()),
+        (Outcome::Blocked, "orders")
+    );
+}
+
+#[tokio::test]
+async fn dry_run_previews_without_sending() {
+    let dir = tempfile::tempdir().unwrap();
+    let guard = guard(&dir);
+    let manager = ClientManager::default();
+    // Unreachable broker: a dry run must not touch the network.
+    let clients = manager.clients(&down_settings("dry-run")).unwrap();
+    let request = ProduceRequest {
+        topic: "orders".into(),
+        partition: Some(2),
+        key: Some("k1".into()),
+        value: "{}".into(),
+        headers: vec![("h".into(), "v".into())],
+    };
+    let started = Instant::now();
+    let outcome = produce(&clients, &request, ticket(&guard, "orders", true))
+        .await
+        .unwrap();
+    assert!(started.elapsed() < Duration::from_millis(200));
+    assert!(outcome.dry_run);
+    assert_eq!(
+        (
+            outcome.offset,
+            outcome.key_bytes,
+            outcome.value_bytes,
+            outcome.header_count
+        ),
+        (None, 2, 2, 1)
+    );
+    assert_eq!(guard.log().recent(1).unwrap()[0].outcome, Outcome::DryRun);
+}
+
+#[tokio::test]
+async fn ticket_for_another_topic_is_rejected() {
+    let dir = tempfile::tempdir().unwrap();
+    let guard = guard(&dir);
+    let manager = ClientManager::default();
+    let clients = manager.clients(&down_settings("mismatch")).unwrap();
+    let request = ProduceRequest {
+        topic: "payments".into(),
+        partition: None,
+        key: None,
+        value: "v".into(),
+        headers: vec![],
+    };
+    let error = produce(&clients, &request, ticket(&guard, "orders", false))
+        .await
+        .unwrap_err();
+    assert_eq!(error.kind, ErrorKind::Internal);
 }
 
 #[tokio::test]
@@ -129,6 +252,8 @@ async fn produce_round_trip_and_topic_listing() {
         .clients(&ConnectionSettings::new("live-produce", bootstrap))
         .unwrap();
     let topic = "ck-it-client-manager";
+    let dir = tempfile::tempdir().unwrap();
+    let guard = guard(&dir);
 
     let request = ProduceRequest {
         topic: topic.into(),
@@ -140,7 +265,7 @@ async fn produce_round_trip_and_topic_listing() {
     // The first produce may race topic auto-creation; retry briefly.
     let mut delivered = None;
     for _ in 0..10 {
-        match produce(&clients, &request).await {
+        match produce(&clients, &request, ticket(&guard, topic, false)).await {
             Ok(result) => {
                 delivered = Some(result);
                 break;
@@ -149,7 +274,10 @@ async fn produce_round_trip_and_topic_listing() {
         }
     }
     let delivered = delivered.expect("message was never delivered");
-    assert!(delivered.offset >= 0);
+    assert!(delivered.offset.unwrap_or(-1) >= 0);
+    let logged = guard.log().recent(1).unwrap();
+    assert_eq!(logged[0].outcome, Outcome::Ok);
+    assert!(logged[0].detail.as_deref().unwrap_or("").contains("offset"));
 
     let names = list_topic_names(clients.clone(), false).await.unwrap();
     assert!(names.contains(&topic.to_string()));

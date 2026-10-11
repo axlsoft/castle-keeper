@@ -4,6 +4,7 @@ import { commands, type Profile, type ProfileInput } from "@/bindings";
 class ConnectionsStore {
     profiles = $state<Profile[]>([]);
     activeId = $state<string | null>(null);
+    unlockedIds = $state<string[]>([]);
     loaded = $state(false);
 
     active = $derived(this.profiles.find((p) => p.id === this.activeId) ?? null);
@@ -12,6 +13,7 @@ class ConnectionsStore {
         const list = await commands.listProfiles();
         this.profiles = list.profiles;
         this.activeId = list.activeId ?? null;
+        this.unlockedIds = list.unlockedIds;
         this.loaded = true;
     }
 
@@ -30,6 +32,21 @@ class ConnectionsStore {
         const profile = await commands.updateProfile(id, input);
         await this.refresh();
         return profile;
+    }
+
+    /** Whether writes to this profile are refused right now. */
+    isReadOnly(profile: Profile) {
+        return profile.readOnly && !this.unlockedIds.includes(profile.id);
+    }
+
+    async unlock(id: string, confirmation: string) {
+        await commands.unlockProfile(id, confirmation);
+        await this.refresh();
+    }
+
+    async lock(id: string) {
+        await commands.lockProfile(id);
+        await this.refresh();
     }
 
     async remove(id: string) {
