@@ -23,6 +23,7 @@ pub fn specta_builder() -> Builder<tauri::Wry> {
             profiles::delete_profile,
             profiles::select_profile,
             profiles::test_connection,
+            profiles::import_client_properties,
             actions::list_actions,
             actions::export_action_log,
             actions::unlock_profile,

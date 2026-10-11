@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { page } from "$app/state";
-    import { replaceState } from "$app/navigation";
+    import { afterNavigate, replaceState } from "$app/navigation";
     import { Button } from "$lib/components/ui/button";
     import ConnectionDialog from "$lib/components/app/connection-dialog.svelte";
     import type { Profile } from "@/bindings";
@@ -18,8 +17,8 @@
     });
 
     // The command palette links here with ?new=1 to open the dialog directly.
-    $effect(() => {
-        if (page.url.searchParams.get("new") === "1") {
+    afterNavigate(({ to }) => {
+        if (to?.url.searchParams.get("new") === "1") {
             add();
             replaceState("/connections", {});
         }

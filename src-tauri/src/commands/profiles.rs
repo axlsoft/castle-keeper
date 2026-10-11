@@ -4,6 +4,7 @@ use tauri::State;
 
 use crate::{
     error::AppResult,
+    import::{self, ImportedConnection},
     kafka::connection::{self, ConnectionReport},
     profiles::{Profile, ProfileInput},
     state::{take_passwords, AppState},
@@ -97,4 +98,12 @@ pub async fn test_connection(
         }
     }
     result
+}
+
+/// Maps a pasted librdkafka or Java `client.properties` block to connection
+/// settings for the form.
+#[tauri::command]
+#[specta::specta]
+pub fn import_client_properties(text: String) -> ImportedConnection {
+    import::parse_client_properties(&text)
 }

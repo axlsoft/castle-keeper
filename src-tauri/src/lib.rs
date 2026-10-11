@@ -6,6 +6,7 @@ pub mod audit;
 mod commands;
 pub mod error;
 pub mod guard;
+pub mod import;
 pub mod kafka;
 mod logging;
 pub mod profiles;

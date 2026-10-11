@@ -41,6 +41,10 @@
     let adminTimeoutMs = $state(10000);
     let deliveryTimeoutMs = $state(15000);
 
+    let importText = $state("");
+    let importOpen = $state(false);
+    let importNotes = $state<{ applied: string[]; ignored: string[]; warnings: string[] } | null>(null);
+
     let testing = $state(false);
     let saving = $state(false);
     let report = $state<ConnectionReport | null>(null);
@@ -67,6 +71,9 @@
         deliveryTimeoutMs = p?.deliveryTimeoutMs ?? 15000;
         report = null;
         error = null;
+        importText = "";
+        importOpen = false;
+        importNotes = null;
     });
 
     const isProd = $derived(environment === "prod");
@@ -99,6 +106,25 @@
         bootstrap = "localhost:9092";
         auth = "none";
         tlsEnabled = false;
+    }
+
+    async function importProperties() {
+        const imported = await commands.importClientProperties(importText);
+        if (imported.bootstrap) bootstrap = imported.bootstrap;
+        auth = imported.sasl?.mechanism ?? "none";
+        username = imported.sasl?.username ?? "";
+        password = imported.saslPassword ?? "";
+        tlsEnabled = imported.tls.enabled;
+        caPath = imported.tls.caPath ?? "";
+        certPath = imported.tls.certPath ?? "";
+        keyPath = imported.tls.keyPath ?? "";
+        keyPassword = imported.tlsKeyPassword ?? "";
+        verifyHostname = imported.tls.verifyHostname ?? true;
+        if (imported.adminTimeoutMs) adminTimeoutMs = imported.adminTimeoutMs;
+        importNotes = { applied: imported.applied, ignored: imported.ignored, warnings: imported.warnings };
+        importOpen = false;
+        report = null;
+        error = null;
     }
 
     async function test() {
@@ -144,15 +170,50 @@
         </Dialog.Header>
 
         <form id="connection-form" onsubmit={save} class="grid gap-4">
-            {#if !profile}
+            <div class="flex gap-2">
+                {#if !profile}
+                    <button
+                        type="button"
+                        class="border-border hover:bg-accent flex-1 rounded-md border border-dashed px-3 py-2 text-left text-sm"
+                        onclick={useLocal}
+                    >
+                        <span class="font-medium">Local Kafka</span>
+                        <span class="text-muted-foreground font-mono"> localhost:9092 · no auth</span>
+                    </button>
+                {/if}
                 <button
                     type="button"
                     class="border-border hover:bg-accent rounded-md border border-dashed px-3 py-2 text-left text-sm"
-                    onclick={useLocal}
+                    aria-expanded={importOpen}
+                    onclick={() => (importOpen = !importOpen)}
                 >
-                    <span class="font-medium">Local Kafka</span>
-                    <span class="text-muted-foreground font-mono"> localhost:9092 · no auth</span>
+                    <span class="font-medium">Paste client.properties</span>
                 </button>
+            </div>
+            {#if importOpen}
+                <div class="grid gap-2">
+                    <textarea
+                        bind:value={importText}
+                        rows="6"
+                        spellcheck="false"
+                        placeholder={"bootstrap.servers=broker:9092\nsecurity.protocol=SASL_SSL\nsasl.mechanism=PLAIN\nsasl.jaas.config=… username=\"…\" password=\"…\";"}
+                        class="border-input bg-background rounded-md border px-3 py-2 font-mono text-xs"
+                    ></textarea>
+                    <Button type="button" size="sm" variant="outline" onclick={importProperties} disabled={!importText.trim()}>
+                        Fill in from properties
+                    </Button>
+                </div>
+            {/if}
+            {#if importNotes}
+                <div class="bg-muted/50 rounded-md p-2 text-xs" role="status">
+                    <p>Imported {importNotes.applied.length} settings{importNotes.applied.length ? `: ${importNotes.applied.join(", ")}` : ""}.</p>
+                    {#if importNotes.ignored.length}
+                        <p class="text-muted-foreground mt-1">Not used: {importNotes.ignored.join(", ")}</p>
+                    {/if}
+                    {#each importNotes.warnings as warning (warning)}
+                        <p class="mt-1 text-amber-700 dark:text-amber-400">{warning}</p>
+                    {/each}
+                </div>
             {/if}
 
             <div class="grid grid-cols-2 gap-3">
