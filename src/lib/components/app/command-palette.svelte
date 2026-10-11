@@ -1,14 +1,14 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import * as Command from "$lib/components/ui/command";
+    import * as Command from "#lib/components/ui/command/index.js";
     import Plug from "@lucide/svelte/icons/plug";
     import Plus from "@lucide/svelte/icons/plus";
-    import { environmentStyle } from "@/environments";
-    import { toastError } from "@/ipc-service";
-    import { EXTRA_PAGES, NAV } from "@/navigation";
-    import { shortcut } from "@/platform";
-    import { connections } from "@/stores/connections.svelte";
-    import { paletteCommands } from "@/stores/palette.svelte";
+    import { environmentStyle } from "#lib/environments.js";
+    import { toastError } from "#lib/ipc-service.js";
+    import { EXTRA_PAGES, NAV } from "#lib/navigation.js";
+    import { shortcut } from "#lib/platform.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
+    import { paletteCommands } from "#lib/stores/palette.svelte.js";
 
     let { open = $bindable(false) }: { open: boolean } = $props();
 

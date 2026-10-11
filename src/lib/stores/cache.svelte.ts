@@ -1,4 +1,4 @@
-import { toAppError, type AppError } from "@/ipc-service";
+import { toAppError, type AppError } from "#lib/ipc-service.js";
 
 interface Entry<T> {
     data: T | null;

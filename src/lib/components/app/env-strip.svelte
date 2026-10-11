@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { environmentStyle } from "@/environments";
-    import { connections } from "@/stores/connections.svelte";
+    import { environmentStyle } from "#lib/environments.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
 
     const active = $derived(connections.active);
     const env = $derived(active ? environmentStyle(active.environment) : null);

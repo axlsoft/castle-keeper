@@ -4,16 +4,16 @@
     import Play from "@lucide/svelte/icons/play";
     import Square from "@lucide/svelte/icons/square";
     import X from "@lucide/svelte/icons/x";
-    import { Button } from "$lib/components/ui/button";
-    import JsonTree from "$lib/components/app/json-tree.svelte";
-    import VirtualList from "$lib/components/app/virtual-list.svelte";
-    import CopyCli from "$lib/components/app/copy-cli.svelte";
-    import { browseCommands } from "@/cli";
-    import { commands, type BrowseEvent, type BrowsedMessage, type PartitionRange, type StopReason } from "@/bindings";
-    import { toAppError, toastError, type AppError } from "@/ipc-service";
-    import { connections } from "@/stores/connections.svelte";
-    import { topicsCache } from "@/stores/topics.svelte";
-    import { fromBase64, hexDump, preview, tryJson, utf8 } from "@/util/bytes";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import JsonTree from "#lib/components/app/json-tree.svelte";
+    import VirtualList from "#lib/components/app/virtual-list.svelte";
+    import CopyCli from "#lib/components/app/copy-cli.svelte";
+    import { browseCommands } from "#lib/cli.js";
+    import { commands, type BrowseEvent, type BrowsedMessage, type PartitionRange, type StopReason } from "#lib/bindings.js";
+    import { toAppError, toastError, type AppError } from "#lib/ipc-service.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
+    import { topicsCache } from "#lib/stores/topics.svelte.js";
+    import { fromBase64, hexDump, preview, tryJson, utf8 } from "#lib/util/bytes.js";
     import { toast } from "svelte-sonner";
 
     type StartKind = "latest" | "earliest" | "offset" | "timestamp";

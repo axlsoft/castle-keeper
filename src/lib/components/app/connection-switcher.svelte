@@ -1,10 +1,10 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
-    import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-    import { environmentStyle } from "@/environments";
-    import { toastError } from "@/ipc-service";
-    import { connections } from "@/stores/connections.svelte";
+    import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
+    import { environmentStyle } from "#lib/environments.js";
+    import { toastError } from "#lib/ipc-service.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
 
     const active = $derived(connections.active);
 </script>

@@ -3,15 +3,15 @@
     import { goto } from "$app/navigation";
     import ArrowLeft from "@lucide/svelte/icons/arrow-left";
     import RefreshCw from "@lucide/svelte/icons/refresh-cw";
-    import { Button } from "$lib/components/ui/button";
-    import ErrorState from "$lib/components/app/error-state.svelte";
-    import SkeletonRows from "$lib/components/app/skeleton-rows.svelte";
-    import CopyCli from "$lib/components/app/copy-cli.svelte";
-    import { groupCommands } from "@/cli";
-    import { ACTIVE_STATES, formatLag, lagClass } from "@/lag";
-    import { ago } from "@/stores/cache.svelte";
-    import { connections } from "@/stores/connections.svelte";
-    import { groupDetailCache } from "@/stores/groups.svelte";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import ErrorState from "#lib/components/app/error-state.svelte";
+    import SkeletonRows from "#lib/components/app/skeleton-rows.svelte";
+    import CopyCli from "#lib/components/app/copy-cli.svelte";
+    import { groupCommands } from "#lib/cli.js";
+    import { ACTIVE_STATES, formatLag, lagClass } from "#lib/lag.js";
+    import { ago } from "#lib/stores/cache.svelte.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
+    import { groupDetailCache } from "#lib/stores/groups.svelte.js";
 
     const groupId = $derived(page.url.searchParams.get("id") ?? "");
     const key = $derived(connections.activeId && groupId ? `${connections.activeId}\u0000${groupId}` : null);

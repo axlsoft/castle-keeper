@@ -2,17 +2,17 @@
 	import "../app.css";
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	import { Toaster } from "$lib/components/ui/sonner/index.js";
-	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+	import { Toaster } from "#lib/components/ui/sonner/index.js";
+	import * as Tooltip from "#lib/components/ui/tooltip/index.js";
 	import { ModeWatcher } from "mode-watcher";
-	import AppSidebar from "$lib/components/app/app-sidebar.svelte";
-	import CommandPalette from "$lib/components/app/command-palette.svelte";
-	import EnvStrip from "$lib/components/app/env-strip.svelte";
-	import { toastError } from "@/ipc-service";
-	import { NAV } from "@/navigation";
-	import { modalsSettled } from "@/modal";
-	import { hasModifier } from "@/platform";
-	import { connections } from "@/stores/connections.svelte";
+	import AppSidebar from "#lib/components/app/app-sidebar.svelte";
+	import CommandPalette from "#lib/components/app/command-palette.svelte";
+	import EnvStrip from "#lib/components/app/env-strip.svelte";
+	import { toastError } from "#lib/ipc-service.js";
+	import { NAV } from "#lib/navigation.js";
+	import { modalsSettled } from "#lib/modal.js";
+	import { hasModifier } from "#lib/platform.js";
+	import { connections } from "#lib/stores/connections.svelte.js";
 
 	let { children } = $props();
 	let paletteOpen = $state(false);

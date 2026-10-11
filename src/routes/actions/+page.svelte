@@ -1,9 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { Button } from "$lib/components/ui/button";
-    import { commands, type ActionEntry, type Outcome } from "@/bindings";
-    import { environmentStyle } from "@/environments";
-    import { toastError } from "@/ipc-service";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import { commands, type ActionEntry, type Outcome } from "#lib/bindings.js";
+    import { environmentStyle } from "#lib/environments.js";
+    import { toastError } from "#lib/ipc-service.js";
     import { toast } from "svelte-sonner";
 
     let entries = $state<ActionEntry[]>([]);

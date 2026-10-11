@@ -1,4 +1,4 @@
-import { commands, type GroupDetail, type GroupSummary } from "@/bindings";
+import { commands, type GroupDetail, type GroupSummary } from "#lib/bindings.js";
 import { SwrCache } from "./cache.svelte";
 
 /** Group summaries per connection id. */

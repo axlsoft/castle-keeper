@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { Button } from "$lib/components/ui/button";
-  import Input from "@/components/ui/input/input.svelte";
-  import TypedConfirmDialog from "$lib/components/app/typed-confirm-dialog.svelte";
-  import { commands, type ProduceOutcome } from "@/bindings";
-  import { environmentStyle } from "@/environments";
-  import { toAppError, toastError, type AppError } from "@/ipc-service";
-  import { connections } from "@/stores/connections.svelte";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import Input from "#lib/components/ui/input/input.svelte";
+  import TypedConfirmDialog from "#lib/components/app/typed-confirm-dialog.svelte";
+  import { commands, type ProduceOutcome } from "#lib/bindings.js";
+  import { environmentStyle } from "#lib/environments.js";
+  import { toAppError, toastError, type AppError } from "#lib/ipc-service.js";
+  import { connections } from "#lib/stores/connections.svelte.js";
   import { toast } from "svelte-sonner";
 
   let topic = $state(page.url.searchParams.get("topic") ?? "");

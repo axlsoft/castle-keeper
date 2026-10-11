@@ -1,13 +1,13 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { afterNavigate, replaceState } from "$app/navigation";
-    import { Button } from "$lib/components/ui/button";
-    import ConnectionDialog from "$lib/components/app/connection-dialog.svelte";
-    import type { Profile } from "@/bindings";
-    import { environmentStyle } from "@/environments";
-    import { toastError } from "@/ipc-service";
-    import { connections } from "@/stores/connections.svelte";
-    import { modalsSettled } from "@/modal";
+    import { afterNavigate, goto } from "$app/navigation";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import ConnectionDialog from "#lib/components/app/connection-dialog.svelte";
+    import type { Profile } from "#lib/bindings.js";
+    import { environmentStyle } from "#lib/environments.js";
+    import { toastError } from "#lib/ipc-service.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
+    import { modalsSettled } from "#lib/modal.js";
 
     let dialogOpen = $state(false);
     let editing = $state<Profile | null>(null);
@@ -18,9 +18,11 @@
     });
 
     // The command palette links here with ?new=1 to open the dialog directly.
-    afterNavigate(({ to }) => {
+    afterNavigate(({ to, shallow, type }) => {
+        if (shallow && type === 'goto') return;
+
         if (to?.url.searchParams.get("new") === "1") {
-            replaceState("/connections", {});
+            goto("/connections", { shallow: true, replace: true });
             // Usually arrives from the command palette, which may still be closing.
             modalsSettled().then(add);
         }
@@ -47,7 +49,11 @@
 
     function securityLabel(profile: Profile) {
         const sasl = profile.sasl
-            ? { plain: "SASL/PLAIN", scramSha256: "SCRAM-SHA-256", scramSha512: "SCRAM-SHA-512" }[profile.sasl.mechanism]
+            ? ({
+                plain: "SASL/PLAIN",
+                scramSha256: "SCRAM-SHA-256",
+                scramSha512: "SCRAM-SHA-512"
+            })[profile.sasl.mechanism]
             : null;
         const tls = profile.tls?.enabled ? "TLS" : null;
         return [sasl, tls].filter(Boolean).join(" + ") || "Plaintext";
@@ -95,15 +101,19 @@
                             Use
                         </Button>
                     {/if}
-                    <Button size="sm" variant="ghost" onclick={() => edit(profile)}>Edit</Button>
+
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onclick={() => edit(profile)}
+                    >Edit</Button>
+
                     <Button
                         size="sm"
                         variant={confirmingDelete === profile.id ? "destructive" : "ghost"}
                         onclick={() => remove(profile)}
-                        onblur={() => (confirmingDelete = null)}
-                    >
-                        {confirmingDelete === profile.id ? "Confirm delete" : "Delete"}
-                    </Button>
+                        onblur={() => confirmingDelete = null}
+                    >{confirmingDelete === profile.id ? "Confirm delete" : "Delete"}</Button>
                 </li>
             {/each}
         </ul>

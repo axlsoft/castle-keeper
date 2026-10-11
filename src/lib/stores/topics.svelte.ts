@@ -1,4 +1,4 @@
-import { commands, type TopicSummary } from "@/bindings";
+import { commands, type TopicSummary } from "#lib/bindings.js";
 import { SwrCache } from "./cache.svelte";
 
 /**

@@ -1,8 +1,8 @@
 <script lang="ts">
     import Terminal from "@lucide/svelte/icons/terminal";
-    import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-    import { PASSWORD_ENV, type CliCommand } from "@/cli";
-    import { toastError } from "@/ipc-service";
+    import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
+    import { PASSWORD_ENV, type CliCommand } from "#lib/cli.js";
+    import { toastError } from "#lib/ipc-service.js";
     import { toast } from "svelte-sonner";
 
     let { commands, disabled = false }: { commands: CliCommand[]; disabled?: boolean } = $props();

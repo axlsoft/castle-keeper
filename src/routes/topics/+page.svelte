@@ -2,18 +2,18 @@
     import { goto } from "$app/navigation";
     import RefreshCw from "@lucide/svelte/icons/refresh-cw";
     import Search from "@lucide/svelte/icons/search";
-    import { Button } from "$lib/components/ui/button";
-    import ErrorState from "$lib/components/app/error-state.svelte";
-    import SkeletonRows from "$lib/components/app/skeleton-rows.svelte";
-    import VirtualList from "$lib/components/app/virtual-list.svelte";
-    import CopyCli from "$lib/components/app/copy-cli.svelte";
-    import { topicListCommands } from "@/cli";
-    import type { TopicSummary } from "@/bindings";
-    import { ago } from "@/stores/cache.svelte";
-    import { connections } from "@/stores/connections.svelte";
-    import { paletteCommands } from "@/stores/palette.svelte";
-    import { topicsCache } from "@/stores/topics.svelte";
-    import { fuzzyFilter } from "@/util/fuzzy";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import ErrorState from "#lib/components/app/error-state.svelte";
+    import SkeletonRows from "#lib/components/app/skeleton-rows.svelte";
+    import VirtualList from "#lib/components/app/virtual-list.svelte";
+    import CopyCli from "#lib/components/app/copy-cli.svelte";
+    import { topicListCommands } from "#lib/cli.js";
+    import type { TopicSummary } from "#lib/bindings.js";
+    import { ago } from "#lib/stores/cache.svelte.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
+    import { paletteCommands } from "#lib/stores/palette.svelte.js";
+    import { topicsCache } from "#lib/stores/topics.svelte.js";
+    import { fuzzyFilter } from "#lib/util/fuzzy.js";
 
     const ROW = 32;
 

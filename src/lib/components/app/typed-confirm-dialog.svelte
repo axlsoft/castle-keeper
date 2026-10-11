@@ -1,7 +1,7 @@
 <script lang="ts">
-    import * as Dialog from "$lib/components/ui/dialog";
-    import { Button } from "$lib/components/ui/button";
-    import Input from "$lib/components/ui/input/input.svelte";
+    import * as Dialog from "#lib/components/ui/dialog/index.js";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import Input from "#lib/components/ui/input/input.svelte";
 
     interface Props {
         open: boolean;

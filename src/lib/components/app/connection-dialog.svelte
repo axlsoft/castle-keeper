@@ -1,18 +1,18 @@
 <script lang="ts">
-    import * as Dialog from "$lib/components/ui/dialog";
-    import { Button } from "$lib/components/ui/button";
-    import Input from "$lib/components/ui/input/input.svelte";
+    import * as Dialog from "#lib/components/ui/dialog/index.js";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import Input from "#lib/components/ui/input/input.svelte";
     import type {
         ConnectionReport,
         Environment,
         Profile,
         ProfileInput,
         SaslMechanism,
-    } from "@/bindings";
-    import { commands } from "@/bindings";
-    import { ENVIRONMENTS } from "@/environments";
-    import { toAppError, type AppError } from "@/ipc-service";
-    import { connections } from "@/stores/connections.svelte";
+    } from "#lib/bindings.js";
+    import { commands } from "#lib/bindings.js";
+    import { ENVIRONMENTS } from "#lib/environments.js";
+    import { toAppError, type AppError } from "#lib/ipc-service.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
 
     type AuthMethod = "none" | SaslMechanism;
 

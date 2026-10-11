@@ -3,9 +3,9 @@
     import Search from "@lucide/svelte/icons/search";
     import ConnectionSwitcher from "./connection-switcher.svelte";
     import ModeToggle from "./mode-toggle.svelte";
-    import { NAV } from "@/navigation";
-    import { shortcut } from "@/platform";
-    import { cn } from "$lib/utils.js";
+    import { NAV } from "#lib/navigation.js";
+    import { shortcut } from "#lib/platform.js";
+    import { cn } from "#lib/utils.js";
     import logo from "./icons/logo.png";
 
     let { onsearch }: { onsearch: () => void } = $props();

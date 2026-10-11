@@ -1,4 +1,4 @@
-import { commands, type Profile, type ProfileInput } from "@/bindings";
+import { commands, type Profile, type ProfileInput } from "#lib/bindings.js";
 
 /** Connection profiles and the active selection, shared across the app. */
 class ConnectionsStore {

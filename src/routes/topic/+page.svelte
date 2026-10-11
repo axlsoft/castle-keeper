@@ -3,14 +3,14 @@
     import { goto } from "$app/navigation";
     import ArrowLeft from "@lucide/svelte/icons/arrow-left";
     import RefreshCw from "@lucide/svelte/icons/refresh-cw";
-    import { Button } from "$lib/components/ui/button";
-    import ErrorState from "$lib/components/app/error-state.svelte";
-    import SkeletonRows from "$lib/components/app/skeleton-rows.svelte";
-    import CopyCli from "$lib/components/app/copy-cli.svelte";
-    import { topicCommands } from "@/cli";
-    import { commands, type TopicConfigEntry, type TopicConsumer, type TopicDetail } from "@/bindings";
-    import { SwrCache, ago } from "@/stores/cache.svelte";
-    import { connections } from "@/stores/connections.svelte";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import ErrorState from "#lib/components/app/error-state.svelte";
+    import SkeletonRows from "#lib/components/app/skeleton-rows.svelte";
+    import CopyCli from "#lib/components/app/copy-cli.svelte";
+    import { topicCommands } from "#lib/cli.js";
+    import { commands, type TopicConfigEntry, type TopicConsumer, type TopicDetail } from "#lib/bindings.js";
+    import { SwrCache, ago } from "#lib/stores/cache.svelte.js";
+    import { connections } from "#lib/stores/connections.svelte.js";
 
     type Tab = "partitions" | "configs" | "consumers";
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { Button } from "$lib/components/ui/button";
-    import type { AppError } from "@/ipc-service";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import type { AppError } from "#lib/ipc-service.js";
 
     let { error, onretry }: { error: AppError; onretry?: () => void } = $props();
 </script>
