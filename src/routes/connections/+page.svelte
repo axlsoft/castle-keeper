@@ -1,5 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { page } from "$app/state";
+    import { replaceState } from "$app/navigation";
     import { Button } from "$lib/components/ui/button";
     import ConnectionDialog from "$lib/components/app/connection-dialog.svelte";
     import type { Profile } from "@/bindings";
@@ -13,6 +15,14 @@
 
     onMount(() => {
         connections.refresh().catch(toastError);
+    });
+
+    // The command palette links here with ?new=1 to open the dialog directly.
+    $effect(() => {
+        if (page.url.searchParams.get("new") === "1") {
+            add();
+            replaceState("/connections", {});
+        }
     });
 
     function add() {
@@ -43,7 +53,7 @@
     }
 </script>
 
-<main class="container max-w-3xl py-8">
+<main class="max-w-3xl p-6">
     <div class="flex items-center justify-between">
         <h1 class="text-lg font-semibold">Connections</h1>
         <Button size="sm" onclick={add}>New connection</Button>

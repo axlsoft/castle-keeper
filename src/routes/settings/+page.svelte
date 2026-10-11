@@ -8,7 +8,7 @@
     }
 </script>
 
-<main class="container py-8">
+<main class="p-6">
     <h1 class="text-lg font-semibold">Settings</h1>
     <label class="mt-4 flex max-w-xs flex-col gap-1 text-sm">
         <span class="font-medium">Theme</span>
