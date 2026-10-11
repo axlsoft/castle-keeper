@@ -1,5 +1,5 @@
 <script lang="ts">
-	import "../app.pcss";
+	import "../app.css";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
 	import { ModeWatcher } from "mode-watcher";
