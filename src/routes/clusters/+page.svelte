@@ -1,15 +1,16 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { send_ipc, type AppError } from "@/ipc-service";
+    import { commands } from "@/bindings";
+    import { toAppError, type AppError } from "@/ipc-service";
 
     let topics = $state<string[]>([]);
     let error = $state<AppError | null>(null);
 
     onMount(async () => {
         try {
-            topics = await send_ipc<string[]>("get_topics");
+            topics = await commands.getTopics();
         } catch (e) {
-            error = e as AppError;
+            error = toAppError(e);
         }
     });
 </script>

@@ -1,0 +1,2 @@
+# Generated bindings are compared byte-for-byte in tests; keep LF everywhere.
+src/lib/bindings.ts text eol=lf
