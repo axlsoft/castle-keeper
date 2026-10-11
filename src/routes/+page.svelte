@@ -2,41 +2,30 @@
   import { Button } from "$lib/components/ui/button";
   import Input from "@/components/ui/input/input.svelte";
   import { send_ipc } from "@/ipc-service";
-  import {
-    KafkaMessageType,
-    type KafkaMessageRequest,
-    type KafkaMessageResponse,
-  } from "@/model/kafka_message";
-
+  import type { KafkaMessageRequest, KafkaMessageResponse } from "@/model/kafka_message";
   import { toast } from "svelte-sonner";
 
-  let name = "";
+  let key = $state("");
+  let value = $state("");
 
-  async function greet(event: Event) {
+  async function produce(event: Event) {
     event.preventDefault();
-    const m: KafkaMessageRequest = {
-      key: "greet",
-      value: name,
-      metadata: {
-        message_type: KafkaMessageType.Json,
-      },
-    };
+    const message: KafkaMessageRequest = { key, value };
     try {
-      const publishResult: KafkaMessageResponse = await send_ipc("send_message", {message:m});
-      const successMessage = `Created new message at ${publishResult.offset} on partition ${publishResult.partition} `;
-      toast.success(successMessage);
-      name = "";
-    } catch (error: any) {
-      toast.error(error);
+      const result: KafkaMessageResponse = await send_ipc("send_message", { message });
+      toast.success(`Produced to partition ${result.partition} at offset ${result.offset}`);
+      value = "";
+    } catch (error) {
+      toast.error(String(error));
     }
   }
 </script>
 
-<main
-  class="container mx-auto flex flex-col items-center justify-center h-screen text-center"
->
-  <form onsubmit={greet} class="flex w-full max-w-sm items-center space-x-2">
-    <Input type="text" bind:value={name} placeholder="Enter your name" />
-    <Button type="submit">Greet</Button>
+<main class="container mx-auto flex h-screen flex-col items-center justify-center gap-4">
+  <h1 class="text-lg font-semibold">Produce a test message</h1>
+  <form onsubmit={produce} class="flex w-full max-w-md flex-col gap-2">
+    <Input type="text" bind:value={key} placeholder="Key (optional)" />
+    <Input type="text" bind:value={value} placeholder="Value" required />
+    <Button type="submit">Produce</Button>
   </form>
 </main>

@@ -1,11 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 
-export async function send_ipc<T, K>(
+export async function send_ipc<T>(
     command: string,
     payload?: Record<string, unknown> | undefined
 ): Promise<T> {
     try {
-        let result = await invoke<T>(command, payload);
+        const result = await invoke<T>(command, payload);
 
         return result;
     } catch (error) {

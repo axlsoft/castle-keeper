@@ -1,23 +1,28 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import type { PageData } from "./$types";
     import { send_ipc } from "@/ipc-service";
 
-    let { data }: { data: PageData } = $props();
-
-    let topics = $state([]);
+    let topics = $state<string[]>([]);
+    let error = $state<string | null>(null);
 
     onMount(async () => {
-        const result: [] = await send_ipc("get_topics");
-        topics = result;
+        try {
+            topics = await send_ipc<string[]>("get_topics");
+        } catch (e) {
+            error = String(e);
+        }
     });
 </script>
 
-<main>
-    <h1>Clusters</h1>
-    <ul>
-        {#each topics as topic}
-            <li>{topic}</li>
-        {/each}
-    </ul>
+<main class="container py-8">
+    <h1 class="text-lg font-semibold">Cluster Management</h1>
+    {#if error}
+        <p class="text-destructive mt-2 text-sm">{error}</p>
+    {:else}
+        <ul class="mt-4 font-mono text-sm">
+            {#each topics as topic (topic)}
+                <li>{topic}</li>
+            {/each}
+        </ul>
+    {/if}
 </main>
