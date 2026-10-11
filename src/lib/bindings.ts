@@ -25,6 +25,11 @@ export const commands = {
 	 *  any password field left untouched.
 	 */
 	testConnection: (input: ProfileInput, profileId: string | null) => __TAURI_INVOKE<ConnectionReport>("test_connection", { input, profileId }),
+	/**
+	 *  Maps a pasted librdkafka or Java `client.properties` block to connection
+	 *  settings for the form.
+	 */
+	importClientProperties: (text: string) => __TAURI_INVOKE<ImportedConnection>("import_client_properties", { text }),
 	/**  Most recent action log entries, newest first. */
 	listActions: (limit: number) => __TAURI_INVOKE<ActionEntry[]>("list_actions", { limit }),
 	/**  Copies the full action log to the Downloads folder and returns its path. */
@@ -110,6 +115,22 @@ export type ErrorKind =
 "secret" | 
 /**  A bug or unexpected state inside the app. */
 "internal";
+
+export type ImportedConnection = {
+	bootstrap: string | null,
+	sasl: SaslConfig | null,
+	/**  Returned so the form can be filled in; saved only to the keychain. */
+	saslPassword: string | null,
+	tls: TlsConfig,
+	tlsKeyPassword: string | null,
+	adminTimeoutMs: number | null,
+	/**  Keys we recognised and applied. */
+	applied: string[],
+	/**  Keys we don't map (left for the user to review). */
+	ignored: string[],
+	/**  Settings that can't be represented and need attention. */
+	warnings: string[],
+};
 
 export type Outcome = "ok" | "failed" | "blocked" | "dryRun" | 
 /**  The operation was authorized but never reported a result. */
