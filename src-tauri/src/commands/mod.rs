@@ -1,23 +1,45 @@
-use tauri::Wry;
-
 pub mod cluster_admin;
 pub mod publisher;
 
-pub trait Pipe: Sized {
-    fn pipe<F>(self, f: F) -> Self
-    where
-        F: FnOnce(Self) -> Self,
-    {
-        f(self)
-    }
+#[cfg(any(test, debug_assertions))]
+use specta_typescript::Typescript;
+use tauri_specta::{collect_commands, Builder, ErrorHandlingMode};
+
+/// The generated TypeScript bindings in the frontend source tree.
+#[cfg(any(test, debug_assertions))]
+pub const BINDINGS_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src/lib/bindings.ts");
+
+/// Every IPC command, with types exported to TypeScript.
+pub fn specta_builder() -> Builder<tauri::Wry> {
+    Builder::<tauri::Wry>::new()
+        .commands(collect_commands![
+            cluster_admin::get_topics,
+            publisher::send_message,
+        ])
+        .error_handling(ErrorHandlingMode::Throw)
+        // Offsets are i64; Kafka offsets stay far below 2^53.
+        .dangerously_cast_bigints_to_number()
 }
 
-impl<T> Pipe for T {}
+#[cfg(any(test, debug_assertions))]
+pub fn typescript() -> Typescript {
+    Typescript::default().header("// Generated from the Rust command definitions. Do not edit.\n// Regenerate with `npm run bindings`.\n")
+}
 
-// Optionally, create a helper function to register commands.
-pub fn register_commands(builder: tauri::Builder<Wry>) -> tauri::Builder<Wry> {
-    builder.invoke_handler(tauri::generate_handler![
-        cluster_admin::get_topics,
-        publisher::send_message
-    ])
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Regenerates the bindings and fails if the committed file was stale.
+    #[test]
+    fn typescript_bindings_are_up_to_date() {
+        let path = std::path::Path::new(BINDINGS_PATH);
+        let before = std::fs::read_to_string(path).unwrap_or_default();
+        specta_builder().export(typescript(), path).unwrap();
+        let after = std::fs::read_to_string(path).unwrap();
+        assert!(
+            before == after,
+            "src/lib/bindings.ts was out of date and has been regenerated; commit the update"
+        );
+    }
 }

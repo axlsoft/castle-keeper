@@ -1,6 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used)]
 
-use commands::Pipe;
 use tauri::Manager;
 
 mod commands;
@@ -12,6 +11,13 @@ struct LogGuard(#[allow(dead_code)] Option<tracing_appender::non_blocking::Worke
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let specta = commands::specta_builder();
+    // Keep the frontend bindings in sync while developing.
+    #[cfg(debug_assertions)]
+    if let Err(error) = specta.export(commands::typescript(), commands::BINDINGS_PATH) {
+        eprintln!("could not export TypeScript bindings: {error}");
+    }
+
     let result = tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
@@ -26,7 +32,7 @@ pub fn run() {
             tracing::info!(version = env!("CARGO_PKG_VERSION"), log_dir = %log_dir.display(), "Castle Keeper starting");
             Ok(())
         })
-        .pipe(commands::register_commands)
+        .invoke_handler(specta.invoke_handler())
         .run(tauri::generate_context!());
 
     if let Err(error) = result {

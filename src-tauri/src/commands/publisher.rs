@@ -7,19 +7,20 @@ use rdkafka::{
 
 use crate::error::AppResult;
 
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize, specta::Type)]
 pub struct PublishMessage {
     pub key: String,
     pub value: String,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, specta::Type)]
 pub struct PublisherResult {
     pub partition: i32,
     pub offset: i64,
 }
 
 #[tauri::command]
+#[specta::specta]
 pub async fn send_message(message: PublishMessage) -> AppResult<PublisherResult> {
     let producer: FutureProducer = ClientConfig::new()
         .set("bootstrap.servers", "localhost:9092")

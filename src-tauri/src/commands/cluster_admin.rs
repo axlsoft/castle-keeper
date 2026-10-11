@@ -8,6 +8,7 @@ use rdkafka::{
 use crate::error::AppResult;
 
 #[tauri::command]
+#[specta::specta]
 pub async fn get_topics() -> AppResult<Vec<String>> {
     // A consumer without a group id never joins a group; it is used here only
     // for metadata. Polling it serves librdkafka's queued log events.

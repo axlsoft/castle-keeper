@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import Input from "@/components/ui/input/input.svelte";
-  import { send_ipc, toastError } from "@/ipc-service";
-  import type { KafkaMessageRequest, KafkaMessageResponse } from "@/model/kafka_message";
+  import { commands } from "@/bindings";
+  import { toastError } from "@/ipc-service";
   import { toast } from "svelte-sonner";
 
   let key = $state("");
@@ -10,9 +10,8 @@
 
   async function produce(event: Event) {
     event.preventDefault();
-    const message: KafkaMessageRequest = { key, value };
     try {
-      const result: KafkaMessageResponse = await send_ipc("send_message", { message });
+      const result = await commands.sendMessage({ key, value });
       toast.success(`Produced to partition ${result.partition} at offset ${result.offset}`);
       value = "";
     } catch (error) {

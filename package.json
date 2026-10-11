@@ -16,7 +16,8 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "tauri": "tauri",
-    "check:tauri-versions": "node scripts/check-tauri-versions.mjs"
+    "check:tauri-versions": "node scripts/check-tauri-versions.mjs",
+    "bindings": "cd src-tauri && cargo test --lib typescript_bindings_are_up_to_date"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.3"

@@ -5,9 +5,10 @@
 
 use rdkafka::error::{KafkaError, RDKafkaErrorCode};
 use serde::Serialize;
+use specta::Type;
 
 /// Broad category of a failure, used by the UI to pick wording and icons.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub enum ErrorKind {
     /// The broker could not be reached (DNS, refused, network).
@@ -36,7 +37,7 @@ pub enum ErrorKind {
     Internal,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, thiserror::Error)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Type, thiserror::Error)]
 #[error("{message}")]
 pub struct AppError {
     pub kind: ErrorKind,
