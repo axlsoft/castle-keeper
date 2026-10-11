@@ -37,7 +37,14 @@ pub async fn send_message(message: PublishMessage) -> AppResult<PublisherResult>
             Duration::from_secs(0),
         )
         .await
-        .map_err(|(error, _message)| error)?;
+        .map_err(|(error, _message)| error)
+        .inspect_err(|error| tracing::warn!(%error, topic, "produce failed"))?;
+    tracing::info!(
+        topic,
+        partition = delivery.partition,
+        offset = delivery.offset,
+        "message produced"
+    );
 
     Ok(PublisherResult {
         partition: delivery.partition,
