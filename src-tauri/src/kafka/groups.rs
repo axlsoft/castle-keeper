@@ -73,6 +73,9 @@ pub struct GroupDetail {
     pub total_lag: Option<i64>,
 }
 
+/// How many groups' committed offsets are fetched concurrently.
+const PARALLEL_GROUP_FETCHES: usize = 8;
+
 /// Lag for one partition. Never negative: a committed offset ahead of the
 /// cached log end (a race between the two reads) counts as caught up.
 pub fn lag(committed: Option<i64>, log_end: i64) -> Option<i64> {
@@ -191,10 +194,31 @@ pub async fn list_groups(clients: Arc<ClusterClients>) -> AppResult<Vec<GroupSum
         let topics = topic_partitions(&clients, timeout)?;
         let all = all_partitions(&topics);
 
+        // Each group needs its own consumer for OffsetFetch; the first lookup
+        // per group pays for connecting it, so fetch several groups at once.
         let mut committed_by_group = Vec::new();
-        for group in groups.groups() {
-            let committed = group_committed(&clients, group.name(), &all, timeout)?;
-            committed_by_group.push((group, committed));
+        for chunk in groups.groups().chunks(PARALLEL_GROUP_FETCHES) {
+            let names: Vec<String> = chunk.iter().map(|g| g.name().to_string()).collect();
+            let results: Vec<AppResult<HashMap<PartitionKey, i64>>> = std::thread::scope(|scope| {
+                let handles: Vec<_> = names
+                    .iter()
+                    .map(|name| {
+                        let (clients, all) = (&clients, &all);
+                        scope.spawn(move || group_committed(clients, name, all, timeout))
+                    })
+                    .collect();
+                handles
+                    .into_iter()
+                    .map(|h| {
+                        h.join().unwrap_or_else(|_| {
+                            Err(AppError::internal("offset fetch thread panicked"))
+                        })
+                    })
+                    .collect()
+            });
+            for (group, committed) in chunk.iter().zip(results) {
+                committed_by_group.push((group, committed?));
+            }
         }
 
         // One batched watermark lookup for every partition any group touches.
