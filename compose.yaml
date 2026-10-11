@@ -20,11 +20,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     healthcheck:
-      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      # A plain TCP probe: the client listener opens once the broker is serving.
+      # (kafka-broker-api-versions.sh starts a JVM on every check.)
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/9092"]
       interval: 5s
-      timeout: 10s
-      retries: 12
-      start_period: 5s
+      timeout: 5s
+      retries: 24
 
   # SASL broker for auth tests: PLAIN and SCRAM-SHA-256/512 on 127.0.0.1:9094.
   # Start with `docker compose --profile sasl up -d --wait`.
@@ -50,11 +51,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/sasl-jaas.conf
     healthcheck:
-      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:19092 > /dev/null 2>&1"]
+      # A plain TCP probe: the client listener opens once the broker is serving.
+      # (kafka-broker-api-versions.sh starts a JVM on every check.)
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/19092"]
       interval: 5s
-      timeout: 10s
-      retries: 12
-      start_period: 5s
+      timeout: 5s
+      retries: 24
 
   # Creates the SCRAM user once the SASL broker is up.
   kafka-sasl-users:
