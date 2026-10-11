@@ -6,6 +6,8 @@
     import { Button } from "$lib/components/ui/button";
     import ErrorState from "$lib/components/app/error-state.svelte";
     import SkeletonRows from "$lib/components/app/skeleton-rows.svelte";
+    import CopyCli from "$lib/components/app/copy-cli.svelte";
+    import { groupCommands } from "@/cli";
     import { ACTIVE_STATES, formatLag, lagClass } from "@/lag";
     import { ago } from "@/stores/cache.svelte";
     import { connections } from "@/stores/connections.svelte";
@@ -41,6 +43,7 @@
         {/if}
         <div class="ml-auto flex items-center gap-2">
             <span class="text-muted-foreground text-xs">{entry?.loading ? "Refreshing…" : `Updated ${ago(entry?.fetchedAt ?? null)}`}</span>
+            {#if connections.active}<CopyCli commands={groupCommands(connections.active, groupId)} />{/if}
             <Button size="sm" variant="ghost" onclick={() => key && groupDetailCache.refresh(key)} aria-label="Refresh"><RefreshCw class="size-4" /></Button>
         </div>
     </header>

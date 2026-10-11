@@ -7,6 +7,8 @@
     import { Button } from "$lib/components/ui/button";
     import JsonTree from "$lib/components/app/json-tree.svelte";
     import VirtualList from "$lib/components/app/virtual-list.svelte";
+    import CopyCli from "$lib/components/app/copy-cli.svelte";
+    import { browseCommands } from "@/cli";
     import { commands, type BrowseEvent, type BrowsedMessage, type PartitionRange, type StopReason } from "@/bindings";
     import { toAppError, toastError, type AppError } from "@/ipc-service";
     import { connections } from "@/stores/connections.svelte";
@@ -55,6 +57,20 @@
     const valueJson = $derived(tryJson(valueText?.text));
     const view = $derived<View>(preferredView === "json" && !valueJson.ok ? "utf8" : preferredView);
 
+    function startPosition() {
+        return startKind === "latest" ? { kind: "latest" as const, count: latestCount }
+            : startKind === "earliest" ? { kind: "earliest" as const }
+            : startKind === "offset" ? { kind: "offset" as const, offset: startOffset }
+            : { kind: "timestamp" as const, timestamp: new Date(startTime).getTime() };
+    }
+
+    /** The current form as kcat commands (empty until the form is valid). */
+    const cliCommands = $derived.by(() => {
+        const partitions = parsePartitions();
+        if (!connections.active || !topic.trim() || partitions === null) return [];
+        return browseCommands(connections.active, { topic: topic.trim(), partitions, start: startPosition(), limit });
+    });
+
     function parsePartitions(): number[] | null {
         const text = partitionsText.trim();
         if (!text || text.toLowerCase() === "all") return [];
@@ -69,11 +85,6 @@
             error = { kind: "invalidInput", message: "Partitions must be a list like 0, 2, 5 — or empty for all." };
             return;
         }
-        const startPosition =
-            startKind === "latest" ? { kind: "latest" as const, count: latestCount }
-            : startKind === "earliest" ? { kind: "earliest" as const }
-            : startKind === "offset" ? { kind: "offset" as const, offset: startOffset }
-            : { kind: "timestamp" as const, timestamp: new Date(startTime).getTime() };
 
         messages = [];
         dropped = 0;
@@ -102,7 +113,7 @@
             } else done = { reason: event.reason, count: event.count, elapsedMs: event.elapsedMs };
         };
         try {
-            await commands.browseMessages(id, { topic: topic.trim(), partitions, start: startPosition, limit }, channel);
+            await commands.browseMessages(id, { topic: topic.trim(), partitions, start: startPosition(), limit }, channel);
         } catch (e) {
             if (browseId === id) error = toAppError(e);
         } finally {
@@ -188,6 +199,7 @@
         {:else}
             <Button type="submit" size="sm" disabled={!key || !topic.trim()}><Play class="size-3.5" /> Read</Button>
         {/if}
+        <CopyCli commands={cliCommands} disabled={!cliCommands.length} />
         <span class="text-muted-foreground ml-auto self-center text-xs tabular-nums" role="status">
             {#if running}Reading… {messages.length.toLocaleString()} messages
             {:else if done}{done.count.toLocaleString()} messages in {done.elapsedMs} ms — {stopText[done.reason]}
