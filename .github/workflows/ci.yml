@@ -142,13 +142,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
       - run: npm ci && npm run build
-      - name: Start Kafka (plaintext and SASL)
-        run: docker compose --profile sasl up -d --wait
-      - name: cargo test
-        working-directory: src-tauri
-        env:
-          CK_IT_BOOTSTRAP: 127.0.0.1:9092
-          CK_IT_SASL_BOOTSTRAP: 127.0.0.1:9094
-        run: cargo test -- --test-threads=1
+      - name: cargo test against local brokers
+        run: bash scripts/test-integration.sh
       - if: failure()
         run: docker compose --profile sasl logs

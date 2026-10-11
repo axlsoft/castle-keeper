@@ -3,6 +3,8 @@
 //! Live checks are skipped unless `CK_IT_BOOTSTRAP` / `CK_IT_SASL_BOOTSTRAP`
 //! are set; refused and DNS failures need no broker.
 
+mod common;
+
 use std::time::Duration;
 
 use castle_keeper_lib::{
@@ -18,7 +20,9 @@ fn settings(bootstrap: &str) -> ConnectionSettings {
 
 #[tokio::test]
 async fn refused_connection_is_reported_as_unreachable() {
-    let error = test_connection(settings("127.0.0.1:1")).await.unwrap_err();
+    let error = test_connection(settings(common::CLOSED_PORT))
+        .await
+        .unwrap_err();
     assert_eq!(error.kind, ErrorKind::Unreachable, "{error:?}");
     assert!(error.message.contains("refused"), "{}", error.message);
     assert!(error.hint.is_some());
@@ -35,8 +39,7 @@ async fn unknown_host_is_reported_as_unreachable() {
 
 #[tokio::test]
 async fn live_cluster_report() {
-    let Ok(bootstrap) = std::env::var("CK_IT_BOOTSTRAP") else {
-        eprintln!("CK_IT_BOOTSTRAP not set; skipping");
+    let Some(bootstrap) = common::live_bootstrap() else {
         return;
     };
     let report = test_connection(settings(&bootstrap)).await.unwrap();
@@ -48,8 +51,7 @@ async fn live_cluster_report() {
 
 #[tokio::test]
 async fn bad_sasl_password_is_reported_as_auth() {
-    let Ok(bootstrap) = std::env::var("CK_IT_SASL_BOOTSTRAP") else {
-        eprintln!("CK_IT_SASL_BOOTSTRAP not set; skipping");
+    let Some(bootstrap) = common::sasl_bootstrap() else {
         return;
     };
     let mut settings = settings(&bootstrap);

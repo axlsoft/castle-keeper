@@ -8,6 +8,8 @@
 //! CK_IT_SASL_BOOTSTRAP=127.0.0.1:9094 cargo test --test sasl_auth
 //! ```
 
+mod common;
+
 use std::time::Duration;
 
 use rdkafka::{
@@ -15,14 +17,6 @@ use rdkafka::{
     error::KafkaResult,
     ClientConfig,
 };
-
-fn bootstrap() -> Option<String> {
-    let value = std::env::var("CK_IT_SASL_BOOTSTRAP").ok();
-    if value.is_none() {
-        eprintln!("CK_IT_SASL_BOOTSTRAP not set; skipping");
-    }
-    value
-}
 
 fn fetch_metadata(
     bootstrap: &str,
@@ -43,7 +37,9 @@ fn fetch_metadata(
 
 #[test]
 fn builtin_sasl_mechanisms_authenticate() {
-    let Some(bootstrap) = bootstrap() else { return };
+    let Some(bootstrap) = common::sasl_bootstrap() else {
+        return;
+    };
     for mechanism in ["PLAIN", "SCRAM-SHA-256", "SCRAM-SHA-512"] {
         let brokers = fetch_metadata(&bootstrap, mechanism, "alice", "alice-secret")
             .unwrap_or_else(|e| panic!("{mechanism} failed: {e}"));
@@ -53,7 +49,9 @@ fn builtin_sasl_mechanisms_authenticate() {
 
 #[test]
 fn wrong_password_is_rejected() {
-    let Some(bootstrap) = bootstrap() else { return };
+    let Some(bootstrap) = common::sasl_bootstrap() else {
+        return;
+    };
     for mechanism in ["PLAIN", "SCRAM-SHA-256"] {
         let result = fetch_metadata(&bootstrap, mechanism, "alice", "wrong");
         assert!(result.is_err(), "{mechanism} accepted a wrong password");

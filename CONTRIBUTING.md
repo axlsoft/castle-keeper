@@ -45,7 +45,16 @@ docker compose --profile sasl up -d --wait
 
 ### Integration tests
 
-Integration tests are skipped unless their broker address is set:
+`src-tauri/tests/` covers topic listing, produce round trips, broker-down
+timeouts, the write guard and SASL/SCRAM auth. Tests that need a broker pass
+without running unless their address is set, so plain `cargo test` works
+without Docker. To run everything against the compose brokers:
+
+```bash
+npm run test:integration    # starts plaintext + SASL brokers, then cargo test
+```
+
+or by hand:
 
 ```bash
 cd src-tauri
