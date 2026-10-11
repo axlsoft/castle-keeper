@@ -97,7 +97,7 @@ jobs:
               dumpbin="$("$vswhere" -latest -find 'VC/Tools/MSVC/**/bin/Hostx64/x64/dumpbin.exe' | head -n1)"
               "$dumpbin" /dependents src-tauri/target/${{ matrix.target }}/release/castle-keeper.exe ;;
           esac
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: castle-keeper-${{ matrix.name }}
           path: src-tauri/target/${{ matrix.target }}/release/bundle/
