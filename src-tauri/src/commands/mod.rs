@@ -1,4 +1,5 @@
 pub mod produce;
+pub mod profiles;
 pub mod topics;
 
 #[cfg(any(test, debug_assertions))]
@@ -15,6 +16,12 @@ pub fn specta_builder() -> Builder<tauri::Wry> {
         .commands(collect_commands![
             topics::list_topics,
             produce::produce_message,
+            profiles::list_profiles,
+            profiles::create_profile,
+            profiles::update_profile,
+            profiles::delete_profile,
+            profiles::select_profile,
+            profiles::test_connection,
         ])
         .error_handling(ErrorHandlingMode::Throw)
         // Offsets are i64; Kafka offsets stay far below 2^53.
