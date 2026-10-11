@@ -8,7 +8,7 @@
 
     onMount(async () => {
         try {
-            topics = await commands.getTopics();
+            topics = await commands.listTopics(false);
         } catch (e) {
             error = toAppError(e);
         }

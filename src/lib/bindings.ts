@@ -7,8 +7,9 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 
 /** Commands */
 export const commands = {
-	getTopics: () => __TAURI_INVOKE<string[]>("get_topics"),
-	sendMessage: (message: PublishMessage) => __TAURI_INVOKE<PublisherResult>("send_message", { message }),
+	/**  Topic names in the active cluster, sorted. */
+	listTopics: (includeInternal: boolean) => __TAURI_INVOKE<string[]>("list_topics", { includeInternal }),
+	produceMessage: (request: ProduceRequest) => __TAURI_INVOKE<ProduceResult>("produce_message", { request }),
 };
 
 /* Types */
@@ -55,12 +56,15 @@ export type ErrorKind =
 /**  A bug or unexpected state inside the app. */
 "internal";
 
-export type PublishMessage = {
-	key: string,
+export type ProduceRequest = {
+	topic: string,
+	partition?: number | null,
+	key?: string | null,
 	value: string,
+	headers?: ([string, string])[],
 };
 
-export type PublisherResult = {
+export type ProduceResult = {
 	partition: number,
 	offset: number,
 };

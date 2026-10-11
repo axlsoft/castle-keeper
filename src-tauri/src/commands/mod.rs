@@ -1,5 +1,5 @@
-pub mod cluster_admin;
-pub mod publisher;
+pub mod produce;
+pub mod topics;
 
 #[cfg(any(test, debug_assertions))]
 use specta_typescript::Typescript;
@@ -13,8 +13,8 @@ pub const BINDINGS_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src/lib
 pub fn specta_builder() -> Builder<tauri::Wry> {
     Builder::<tauri::Wry>::new()
         .commands(collect_commands![
-            cluster_admin::get_topics,
-            publisher::send_message,
+            topics::list_topics,
+            produce::produce_message,
         ])
         .error_handling(ErrorHandlingMode::Throw)
         // Offsets are i64; Kafka offsets stay far below 2^53.

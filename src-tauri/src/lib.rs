@@ -4,7 +4,9 @@ use tauri::Manager;
 
 mod commands;
 pub mod error;
+pub mod kafka;
 mod logging;
+pub mod state;
 
 /// Keeps the non-blocking log writer alive until the app exits.
 struct LogGuard(#[allow(dead_code)] Option<tracing_appender::non_blocking::WorkerGuard>);
@@ -29,6 +31,7 @@ pub fn run() {
             let log_dir = app.path().app_log_dir()?;
             let guard = logging::init(&log_dir);
             app.manage(LogGuard(guard));
+            app.manage(state::AppState::default());
             tracing::info!(version = env!("CARGO_PKG_VERSION"), log_dir = %log_dir.display(), "Castle Keeper starting");
             Ok(())
         })
