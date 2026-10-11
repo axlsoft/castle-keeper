@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 22+ and npm
+- Node.js 22.17+ and npm
 - Rust (stable) with Cargo
 - The [Tauri 2 system dependencies](https://v2.tauri.app/start/prerequisites/) for your OS
 - Docker or Podman with Compose, for the local Kafka cluster
