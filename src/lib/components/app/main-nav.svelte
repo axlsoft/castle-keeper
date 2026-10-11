@@ -56,5 +56,16 @@
         >
             Schemas
         </a>
+        <a
+            href="/settings"
+            class={cn(
+                "hover:text-foreground/80 transition-colors",
+                page.url.pathname === "/settings"
+                    ? "text-foreground"
+                    : "text-foreground/60",
+            )}
+        >
+            Settings
+        </a>
     </nav>
 </div>
