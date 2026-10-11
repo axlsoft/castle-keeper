@@ -44,6 +44,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 # Cyrus SASL is only needed for Kerberos (see the `kerberos` feature).
 rdkafka = { version = "0.39", features = ["ssl-vendored", "libz-static", "tracing"] }
 
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+
 # librdkafka's configure/make build doesn't support MSVC; use CMake there.
 [target.'cfg(windows)'.dependencies]
 rdkafka = { version = "0.39", features = ["cmake-build"] }
