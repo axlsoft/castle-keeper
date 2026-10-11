@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
   import Input from "@/components/ui/input/input.svelte";
   import TypedConfirmDialog from "$lib/components/app/typed-confirm-dialog.svelte";
@@ -9,7 +10,7 @@
   import { connections } from "@/stores/connections.svelte";
   import { toast } from "svelte-sonner";
 
-  let topic = $state("");
+  let topic = $state(page.url.searchParams.get("topic") ?? "");
   let key = $state("");
   let value = $state("");
   let dryRun = $state(false);

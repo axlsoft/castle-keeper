@@ -28,6 +28,9 @@ pub struct ClusterClients {
     metadata: Arc<BaseConsumer>,
     admin: Admin,
     producer: Mutex<Option<FutureProducer>>,
+    /// Consumers with a `group.id`, used only to read that group's committed
+    /// offsets. They never subscribe or commit, so they don't join the group.
+    group_consumers: Mutex<HashMap<String, Arc<BaseConsumer>>>,
     stop_polling: Arc<AtomicBool>,
 }
 
@@ -42,6 +45,7 @@ impl ClusterClients {
             metadata,
             admin,
             producer: Mutex::new(None),
+            group_consumers: Mutex::new(HashMap::new()),
             stop_polling,
         })
     }
@@ -77,6 +81,29 @@ impl ClusterClients {
             .create()?;
         *slot = Some(producer.clone());
         Ok(producer)
+    }
+}
+
+impl ClusterClients {
+    /// A consumer for reading `group_id`'s committed offsets, cached.
+    pub fn group_consumer(&self, group_id: &str) -> AppResult<Arc<BaseConsumer>> {
+        let mut consumers = self
+            .group_consumers
+            .lock()
+            .map_err(|_| AppError::internal("group consumer lock poisoned"))?;
+        if let Some(existing) = consumers.get(group_id) {
+            return Ok(existing.clone());
+        }
+        let consumer: Arc<BaseConsumer> = Arc::new(
+            self.settings
+                .client_config()
+                .set("group.id", group_id)
+                .set("enable.auto.commit", "false")
+                .set("enable.auto.offset.store", "false")
+                .create()?,
+        );
+        consumers.insert(group_id.to_string(), consumer.clone());
+        Ok(consumer)
     }
 }
 

@@ -7,8 +7,14 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 
 /** Commands */
 export const commands = {
-	/**  Topic names in the active cluster, sorted. */
-	listTopics: (includeInternal: boolean) => __TAURI_INVOKE<string[]>("list_topics", { includeInternal }),
+	/**
+	 *  Topics in the active cluster with partition count, replication factor
+	 *  and health, sorted by name.
+	 */
+	listTopics: (includeInternal: boolean) => __TAURI_INVOKE<TopicSummary[]>("list_topics", { includeInternal }),
+	describeTopic: (name: string) => __TAURI_INVOKE<TopicDetail>("describe_topic", { name }),
+	topicConfigs: (name: string) => __TAURI_INVOKE<TopicConfigEntry[]>("topic_configs", { name }),
+	topicConsumers: (name: string) => __TAURI_INVOKE<TopicConsumer[]>("topic_consumers", { name }),
 	/**
 	 *  Produces one message to the active connection, subject to the write
 	 *  guard. `dry_run` validates and previews without sending.
@@ -76,6 +82,8 @@ export type BrokerInfo = {
 	port: number,
 };
 
+export type ConfigOrigin = "topicOverride" | "dynamicBroker" | "dynamicDefaultBroker" | "staticBroker" | "default" | "unknown";
+
 export type ConnectionReport = {
 	clusterId: string | null,
 	controllerId: number | null,
@@ -135,6 +143,16 @@ export type ImportedConnection = {
 export type Outcome = "ok" | "failed" | "blocked" | "dryRun" | 
 /**  The operation was authorized but never reported a result. */
 "abandoned";
+
+export type PartitionInfo = {
+	id: number,
+	/**  -1 when the partition has no leader. */
+	leader: number,
+	replicas: number[],
+	isr: number[],
+	low: number,
+	high: number,
+};
 
 export type ProduceOutcome = {
 	/**  True when the request was validated and previewed but not sent. */
@@ -212,6 +230,43 @@ export type TlsConfig = {
 	certPath?: string | null,
 	keyPath?: string | null,
 	verifyHostname?: boolean,
+};
+
+export type TopicConfigEntry = {
+	name: string,
+	/**  Null for sensitive values. */
+	value: string | null,
+	origin: ConfigOrigin,
+	isDefault: boolean,
+	sensitive: boolean,
+	readOnly: boolean,
+};
+
+export type TopicConsumer = {
+	groupId: string,
+	state: string,
+	/**  Lag summed over this topic's partitions; null without commits. */
+	lag: number | null,
+	members: number,
+};
+
+export type TopicDetail = {
+	summary: TopicSummary,
+	partitions: PartitionInfo[],
+	/**  Total messages currently retained (sum of high − low). */
+	messageCount: number,
+};
+
+export type TopicSummary = {
+	name: string,
+	internal: boolean,
+	partitions: number,
+	/**  Replicas per partition (the most common count). */
+	replicationFactor: number,
+	/**  Partitions whose in-sync replica set is smaller than the replica set. */
+	underReplicated: number,
+	/**  Partitions without a leader. */
+	offline: number,
 };
 
 /**  Operations that change a cluster or lift a safeguard. */
