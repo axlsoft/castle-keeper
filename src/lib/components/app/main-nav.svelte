@@ -68,6 +68,17 @@
             Connections
         </a>
         <a
+            href="/actions"
+            class={cn(
+                "hover:text-foreground/80 transition-colors",
+                page.url.pathname === "/actions"
+                    ? "text-foreground"
+                    : "text-foreground/60",
+            )}
+        >
+            Action Log
+        </a>
+        <a
             href="/settings"
             class={cn(
                 "hover:text-foreground/80 transition-colors",

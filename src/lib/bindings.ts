@@ -9,7 +9,11 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 export const commands = {
 	/**  Topic names in the active cluster, sorted. */
 	listTopics: (includeInternal: boolean) => __TAURI_INVOKE<string[]>("list_topics", { includeInternal }),
-	produceMessage: (request: ProduceRequest) => __TAURI_INVOKE<ProduceResult>("produce_message", { request }),
+	/**
+	 *  Produces one message to the active connection, subject to the write
+	 *  guard. `dry_run` validates and previews without sending.
+	 */
+	produceMessage: (request: ProduceRequest, dryRun: boolean, confirmation: string | null) => __TAURI_INVOKE<ProduceOutcome>("produce_message", { request, dryRun, confirmation }),
 	listProfiles: () => __TAURI_INVOKE<ProfileList>("list_profiles"),
 	createProfile: (input: ProfileInput) => __TAURI_INVOKE<Profile>("create_profile", { input }),
 	updateProfile: (id: string, input: ProfileInput) => __TAURI_INVOKE<Profile>("update_profile", { id, input }),
@@ -21,9 +25,30 @@ export const commands = {
 	 *  any password field left untouched.
 	 */
 	testConnection: (input: ProfileInput, profileId: string | null) => __TAURI_INVOKE<ConnectionReport>("test_connection", { input, profileId }),
+	/**  Most recent action log entries, newest first. */
+	listActions: (limit: number) => __TAURI_INVOKE<ActionEntry[]>("list_actions", { limit }),
+	/**  Copies the full action log to the Downloads folder and returns its path. */
+	exportActionLog: () => __TAURI_INVOKE<string>("export_action_log"),
+	/**  Lifts read-only for the current session after the profile name is typed. */
+	unlockProfile: (id: string, confirmation: string) => __TAURI_INVOKE<null>("unlock_profile", { id, confirmation }),
+	lockProfile: (id: string) => __TAURI_INVOKE<null>("lock_profile", { id }),
 };
 
 /* Types */
+export type ActionEntry = {
+	id: string,
+	/**  RFC 3339, UTC. */
+	timestamp: string,
+	profileId: string,
+	profileName: string,
+	environment: Environment,
+	action: WriteAction,
+	target: string,
+	dryRun: boolean,
+	outcome: Outcome,
+	detail?: string | null,
+};
+
 export type AppError = AppError_Serialize | AppError_Deserialize;
 
 export type AppError_Deserialize = {
@@ -86,17 +111,27 @@ export type ErrorKind =
 /**  A bug or unexpected state inside the app. */
 "internal";
 
+export type Outcome = "ok" | "failed" | "blocked" | "dryRun" | 
+/**  The operation was authorized but never reported a result. */
+"abandoned";
+
+export type ProduceOutcome = {
+	/**  True when the request was validated and previewed but not sent. */
+	dryRun: boolean,
+	topic: string,
+	partition: number | null,
+	offset: number | null,
+	keyBytes: number,
+	valueBytes: number,
+	headerCount: number,
+};
+
 export type ProduceRequest = {
 	topic: string,
 	partition?: number | null,
 	key?: string | null,
 	value: string,
 	headers?: ([string, string])[],
-};
-
-export type ProduceResult = {
-	partition: number,
-	offset: number,
 };
 
 export type Profile = {
@@ -137,6 +172,8 @@ export type ProfileInput = {
 export type ProfileList = {
 	profiles: Profile[],
 	activeId: string | null,
+	/**  Profiles whose read-only flag is lifted for this session. */
+	unlockedIds: string[],
 };
 
 export type SaslConfig = {
@@ -155,4 +192,7 @@ export type TlsConfig = {
 	keyPath?: string | null,
 	verifyHostname?: boolean,
 };
+
+/**  Operations that change a cluster or lift a safeguard. */
+export type WriteAction = "produce" | "unlockSession";
 

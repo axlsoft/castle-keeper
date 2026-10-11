@@ -2,8 +2,10 @@
 
 use tauri::Manager;
 
+pub mod audit;
 mod commands;
 pub mod error;
+pub mod guard;
 pub mod kafka;
 mod logging;
 pub mod profiles;
@@ -33,7 +35,10 @@ pub fn run() {
             let log_dir = app.path().app_log_dir()?;
             let guard = logging::init(&log_dir);
             app.manage(LogGuard(guard));
-            app.manage(state::AppState::load(&app.path().app_config_dir()?));
+            app.manage(state::AppState::load(
+                &app.path().app_config_dir()?,
+                &app.path().app_data_dir()?,
+            ));
             tracing::info!(version = env!("CARGO_PKG_VERSION"), log_dir = %log_dir.display(), "Castle Keeper starting");
             Ok(())
         })

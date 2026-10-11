@@ -1,3 +1,4 @@
+pub mod actions;
 pub mod produce;
 pub mod profiles;
 pub mod topics;
@@ -22,6 +23,10 @@ pub fn specta_builder() -> Builder<tauri::Wry> {
             profiles::delete_profile,
             profiles::select_profile,
             profiles::test_connection,
+            actions::list_actions,
+            actions::export_action_log,
+            actions::unlock_profile,
+            actions::lock_profile,
         ])
         .error_handling(ErrorHandlingMode::Throw)
         // Offsets are i64; Kafka offsets stay far below 2^53.

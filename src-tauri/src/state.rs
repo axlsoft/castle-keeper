@@ -1,7 +1,9 @@
 use std::{path::Path, sync::Arc};
 
 use crate::{
+    audit::ActionLog,
     error::{AppError, AppResult, ErrorKind},
+    guard::{SessionLocks, WriteGuard},
     kafka::{manager::ClientManager, settings::ConnectionSettings},
     profiles::{Profile, ProfileInput, ProfileSecrets, ProfileStore},
     secrets::{KeyringStore, SecretField, SecretStore},
@@ -12,12 +14,13 @@ pub struct AppState {
     pub clients: ClientManager,
     pub profiles: ProfileStore,
     pub secrets: Arc<dyn SecretStore>,
+    pub guard: WriteGuard,
 }
 
 impl AppState {
     /// Loads state from the app config directory. A corrupt profile file is
     /// moved aside so the app still starts.
-    pub fn load(config_dir: &Path) -> Self {
+    pub fn load(config_dir: &Path, data_dir: &Path) -> Self {
         let path = config_dir.join("profiles.json");
         let profiles = match ProfileStore::load(&path) {
             Ok(store) => store,
@@ -28,15 +31,24 @@ impl AppState {
                 ProfileStore::empty(path)
             }
         };
-        Self::new(profiles, Arc::new(KeyringStore))
+        let log = ActionLog::new(data_dir.join("actions.jsonl"));
+        Self::new(profiles, Arc::new(KeyringStore), log)
     }
 
-    pub fn new(profiles: ProfileStore, secrets: Arc<dyn SecretStore>) -> Self {
+    pub fn new(profiles: ProfileStore, secrets: Arc<dyn SecretStore>, log: ActionLog) -> Self {
         Self {
             clients: ClientManager::default(),
             profiles,
             secrets,
+            guard: WriteGuard::new(Arc::new(log), Arc::new(SessionLocks::default())),
         }
+    }
+
+    /// Switches the active profile. Any session unlock is revoked.
+    pub fn select_profile(&self, id: &str) -> AppResult<Profile> {
+        let profile = self.profiles.set_active(id)?;
+        self.guard.session().lock_all();
+        Ok(profile)
     }
 
     pub fn create_profile(&self, mut input: ProfileInput) -> AppResult<Profile> {
@@ -60,6 +72,7 @@ impl AppState {
 
     pub fn delete_profile(&self, id: &str) -> AppResult<Profile> {
         let removed = self.profiles.delete(id)?;
+        self.guard.session().lock(id);
         self.clients.evict(id);
         if let Err(error) = self.secrets.delete_all(id) {
             tracing::warn!(%error, profile = %removed.name, "could not remove stored secrets");
@@ -160,7 +173,8 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let secrets = Arc::new(MemoryStore::default());
         let store = ProfileStore::load(dir.path().join("profiles.json")).unwrap();
-        let state = AppState::new(store, secrets.clone());
+        let log = ActionLog::new(dir.path().join("actions.jsonl"));
+        let state = AppState::new(store, secrets.clone(), log);
         (dir, secrets, state)
     }
 
