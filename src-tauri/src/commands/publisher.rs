@@ -37,7 +37,8 @@ pub async fn send_message(message: PublishMessage) -> Result<PublisherResult, St
         )
         .await
     {
-        Ok((partition, offset)) => {
+        Ok(delivery) => {
+            let (partition, offset) = (delivery.partition, delivery.offset);
             println!(
                 "Message delivered: partition: {}, offset: {}",
                 partition, offset
