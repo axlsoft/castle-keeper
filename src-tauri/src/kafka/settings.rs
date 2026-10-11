@@ -28,11 +28,6 @@ impl ConnectionSettings {
         }
     }
 
-    /// The implicit connection to the local development broker.
-    pub fn local() -> Self {
-        Self::new("local", "127.0.0.1:9092")
-    }
-
     pub fn client_config(&self) -> ClientConfig {
         let mut config = ClientConfig::new();
         config

@@ -10,6 +10,13 @@ export const commands = {
 	/**  Topic names in the active cluster, sorted. */
 	listTopics: (includeInternal: boolean) => __TAURI_INVOKE<string[]>("list_topics", { includeInternal }),
 	produceMessage: (request: ProduceRequest) => __TAURI_INVOKE<ProduceResult>("produce_message", { request }),
+	listProfiles: () => __TAURI_INVOKE<ProfileList>("list_profiles"),
+	createProfile: (input: ProfileInput) => __TAURI_INVOKE<Profile>("create_profile", { input }),
+	updateProfile: (id: string, input: ProfileInput) => __TAURI_INVOKE<Profile>("update_profile", { id, input }),
+	deleteProfile: (id: string) => __TAURI_INVOKE<null>("delete_profile", { id }),
+	selectProfile: (id: string) => __TAURI_INVOKE<Profile>("select_profile", { id }),
+	/**  Connects with unsaved settings and reports what was found. */
+	testConnection: (input: ProfileInput) => __TAURI_INVOKE<ConnectionReport>("test_connection", { input }),
 };
 
 /* Types */
@@ -28,6 +35,25 @@ export type AppError_Serialize = {
 	/**  What the user can do about it, when we know. */
 	hint?: string | null,
 };
+
+export type BrokerInfo = {
+	id: number,
+	host: string,
+	port: number,
+};
+
+export type ConnectionReport = {
+	clusterId: string | null,
+	controllerId: number | null,
+	brokers: BrokerInfo[],
+	topicCount: number,
+	/**  Time to the first metadata response, including connect and auth. */
+	connectMs: number,
+	/**  A second metadata round trip on the established connection. */
+	roundTripMs: number,
+};
+
+export type Environment = "local" | "dev" | "staging" | "prod";
 
 /**  Broad category of a failure, used by the UI to pick wording and icons. */
 export type ErrorKind = 
@@ -67,5 +93,55 @@ export type ProduceRequest = {
 export type ProduceResult = {
 	partition: number,
 	offset: number,
+};
+
+export type Profile = {
+	id: string,
+	name: string,
+	environment: Environment,
+	bootstrap: string,
+	sasl?: SaslConfig | null,
+	tls?: TlsConfig,
+	/**
+	 *  Persisted read-only flag. Always true for production profiles; a
+	 *  production profile can only be unlocked for the current session.
+	 */
+	readOnly: boolean,
+	adminTimeoutMs: number,
+	deliveryTimeoutMs: number,
+};
+
+/**  What the UI sends to create or update a profile. */
+export type ProfileInput = {
+	name: string,
+	environment: Environment,
+	bootstrap: string,
+	sasl?: SaslConfig | null,
+	tls?: TlsConfig,
+	readOnly?: boolean,
+	adminTimeoutMs?: number | null,
+	deliveryTimeoutMs?: number | null,
+};
+
+export type ProfileList = {
+	profiles: Profile[],
+	activeId: string | null,
+};
+
+export type SaslConfig = {
+	mechanism: SaslMechanism,
+	username: string,
+};
+
+export type SaslMechanism = "plain" | "scramSha256" | "scramSha512";
+
+export type TlsConfig = {
+	enabled: boolean,
+	/**  PEM file with the CA certificate(s); the OS trust store when empty. */
+	caPath?: string | null,
+	/**  Client certificate and key for mTLS. */
+	certPath?: string | null,
+	keyPath?: string | null,
+	verifyHostname?: boolean,
 };
 

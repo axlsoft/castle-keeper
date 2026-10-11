@@ -12,7 +12,8 @@ pub async fn produce_message(
     state: State<'_, AppState>,
     request: ProduceRequest,
 ) -> AppResult<ProduceResult> {
-    let clients = state.clients.clients(&state.active_connection())?;
+    let (_profile, settings) = state.active_connection()?;
+    let clients = state.clients.clients(&settings)?;
     let result = produce::produce(&clients, &request).await;
     match &result {
         Ok(delivered) => tracing::info!(
