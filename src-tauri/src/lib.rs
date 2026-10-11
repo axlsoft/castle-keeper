@@ -7,6 +7,7 @@ pub mod error;
 pub mod kafka;
 mod logging;
 pub mod profiles;
+pub mod secrets;
 pub mod state;
 
 /// Keeps the non-blocking log writer alive until the app exits.

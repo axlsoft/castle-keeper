@@ -30,6 +30,8 @@
     let bootstrap = $state("");
     let auth = $state<AuthMethod>("none");
     let username = $state("");
+    let password = $state("");
+    let keyPassword = $state("");
     let tlsEnabled = $state(false);
     let caPath = $state("");
     let certPath = $state("");
@@ -53,6 +55,8 @@
         bootstrap = p?.bootstrap ?? "";
         auth = p?.sasl?.mechanism ?? "none";
         username = p?.sasl?.username ?? "";
+        password = "";
+        keyPassword = "";
         tlsEnabled = p?.tls?.enabled ?? false;
         caPath = p?.tls?.caPath ?? "";
         certPath = p?.tls?.certPath ?? "";
@@ -83,6 +87,9 @@
             readOnly: readOnly || isProd,
             adminTimeoutMs,
             deliveryTimeoutMs,
+            // Empty means "keep what is saved" (or nothing, for a new connection).
+            saslPassword: auth !== "none" && password ? password : null,
+            tlsKeyPassword: tlsEnabled && keyPassword ? keyPassword : null,
         };
     }
 
@@ -99,7 +106,7 @@
         report = null;
         error = null;
         try {
-            report = await commands.testConnection(input());
+            report = await commands.testConnection(input(), profile?.id ?? null);
         } catch (e) {
             error = toAppError(e);
         } finally {
@@ -196,6 +203,17 @@
                     </label>
                 {/if}
             </div>
+            {#if auth !== "none"}
+                <label class="grid gap-1">
+                    <span class={fieldLabel}>Password</span>
+                    <Input
+                        type="password"
+                        bind:value={password}
+                        autocomplete="new-password"
+                        placeholder={profile?.sasl ? "Saved in keychain — leave empty to keep" : ""}
+                    />
+                </label>
+            {/if}
 
             <div class="grid gap-2">
                 <label class="flex items-center gap-2 text-sm">
@@ -218,6 +236,17 @@
                                 <Input class="font-mono" bind:value={keyPath} placeholder="/path/to/client.key" />
                             </label>
                         </div>
+                        {#if keyPath}
+                            <label class="grid gap-1">
+                                <span class={fieldLabel}>Client key password (if encrypted)</span>
+                                <Input
+                                    type="password"
+                                    bind:value={keyPassword}
+                                    autocomplete="new-password"
+                                    placeholder={profile?.tls?.keyPath ? "Leave empty to keep the saved one" : ""}
+                                />
+                            </label>
+                        {/if}
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" bind:checked={verifyHostname} />
                             Verify broker hostname

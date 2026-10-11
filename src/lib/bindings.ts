@@ -15,8 +15,12 @@ export const commands = {
 	updateProfile: (id: string, input: ProfileInput) => __TAURI_INVOKE<Profile>("update_profile", { id, input }),
 	deleteProfile: (id: string) => __TAURI_INVOKE<null>("delete_profile", { id }),
 	selectProfile: (id: string) => __TAURI_INVOKE<Profile>("select_profile", { id }),
-	/**  Connects with unsaved settings and reports what was found. */
-	testConnection: (input: ProfileInput) => __TAURI_INVOKE<ConnectionReport>("test_connection", { input }),
+	/**
+	 *  Connects with unsaved settings and reports what was found. When editing
+	 *  an existing connection (`profile_id`), its stored passwords are used for
+	 *  any password field left untouched.
+	 */
+	testConnection: (input: ProfileInput, profileId: string | null) => __TAURI_INVOKE<ConnectionReport>("test_connection", { input, profileId }),
 };
 
 /* Types */
@@ -121,6 +125,13 @@ export type ProfileInput = {
 	readOnly?: boolean,
 	adminTimeoutMs?: number | null,
 	deliveryTimeoutMs?: number | null,
+	/**
+	 *  `None` keeps the saved password, `Some("")` clears it, anything else
+	 *  replaces it. Stored in the OS credential store only.
+	 */
+	saslPassword?: string | null,
+	/**  Same semantics as `sasl_password`, for an encrypted client key. */
+	tlsKeyPassword?: string | null,
 };
 
 export type ProfileList = {
