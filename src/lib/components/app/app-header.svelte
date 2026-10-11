@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ModeToggle from "./mode-toggle.svelte";
 	import MainNav from "./main-nav.svelte";
+	import ConnectionSwitcher from "./connection-switcher.svelte";
 </script>
 
 <header
@@ -11,7 +12,8 @@
 		<div
 			class="flex flex-1 items-center justify-between space-x-2 md:justify-end"
 		>
-			<nav class="flex items-center">
+			<nav class="flex items-center gap-2">
+				<ConnectionSwitcher />
 				<ModeToggle />
 			</nav>
 		</div>
