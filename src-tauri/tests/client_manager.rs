@@ -3,76 +3,23 @@
 //! set (e.g. `127.0.0.1:9092` from `docker compose up -d --wait`); the
 //! broker-down tests use a closed local port and always run.
 
-use std::{
-    sync::Arc,
-    time::{Duration, Instant},
-};
+mod common;
+
+use std::time::{Duration, Instant};
 
 use castle_keeper_lib::{
-    audit::{ActionLog, Outcome, WriteAction},
+    audit::{Outcome, WriteAction},
     error::ErrorKind,
-    guard::{SessionLocks, WriteGuard, WriteRequest, WriteTicket},
+    guard::WriteRequest,
     kafka::{
         manager::ClientManager,
         produce::{produce, ProduceRequest},
         settings::ConnectionSettings,
         topics::list_topic_names,
     },
-    profiles::{Environment, Profile, TlsConfig},
+    profiles::Environment,
 };
-
-fn profile(environment: Environment, read_only: bool) -> Profile {
-    Profile {
-        id: "it".into(),
-        name: "it-profile".into(),
-        environment,
-        bootstrap: CLOSED_PORT.into(),
-        sasl: None,
-        tls: TlsConfig::default(),
-        read_only,
-        admin_timeout_ms: 2_000,
-        delivery_timeout_ms: 2_000,
-    }
-}
-
-fn guard(dir: &tempfile::TempDir) -> WriteGuard {
-    WriteGuard::new(
-        Arc::new(ActionLog::new(dir.path().join("actions.jsonl"))),
-        Arc::new(SessionLocks::default()),
-    )
-}
-
-fn ticket(guard: &WriteGuard, topic: &str, dry_run: bool) -> WriteTicket {
-    guard
-        .authorize(
-            &profile(Environment::Local, false),
-            WriteRequest {
-                action: WriteAction::Produce,
-                target: topic.into(),
-                dry_run,
-                confirmation: None,
-            },
-        )
-        .unwrap()
-}
-
-/// A local port nothing listens on, so connections are refused immediately.
-const CLOSED_PORT: &str = "127.0.0.1:1";
-
-fn live_bootstrap() -> Option<String> {
-    let value = std::env::var("CK_IT_BOOTSTRAP").ok();
-    if value.is_none() {
-        eprintln!("CK_IT_BOOTSTRAP not set; skipping");
-    }
-    value
-}
-
-fn down_settings(id: &str) -> ConnectionSettings {
-    let mut settings = ConnectionSettings::new(id, CLOSED_PORT);
-    settings.admin_timeout = Duration::from_secs(2);
-    settings.delivery_timeout = Duration::from_secs(2);
-    settings
-}
+use common::{down_settings, guard, live_bootstrap, profile, ticket};
 
 #[test]
 fn broker_down_metadata_fails_in_time_without_stalling_the_runtime() {

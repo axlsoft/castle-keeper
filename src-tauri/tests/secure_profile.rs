@@ -1,6 +1,8 @@
 //! A SASL profile whose password lives only in the secret store connects.
 //! Skipped unless `CK_IT_SASL_BOOTSTRAP` is set.
 
+mod common;
+
 use std::sync::Arc;
 
 use castle_keeper_lib::{
@@ -13,8 +15,7 @@ use castle_keeper_lib::{
 
 #[tokio::test]
 async fn scram_profile_connects_with_stored_password() {
-    let Ok(bootstrap) = std::env::var("CK_IT_SASL_BOOTSTRAP") else {
-        eprintln!("CK_IT_SASL_BOOTSTRAP not set; skipping");
+    let Some(bootstrap) = common::sasl_bootstrap() else {
         return;
     };
     let dir = tempfile::tempdir().unwrap();
