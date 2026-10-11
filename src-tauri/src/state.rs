@@ -1,4 +1,11 @@
-use std::{path::Path, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::Path,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
+};
 
 use crate::{
     audit::ActionLog,
@@ -15,6 +22,35 @@ pub struct AppState {
     pub profiles: ProfileStore,
     pub secrets: Arc<dyn SecretStore>,
     pub guard: WriteGuard,
+    pub browses: Browses,
+}
+
+/// Cancellation flags for running message browses, by browse id.
+#[derive(Default)]
+pub struct Browses(Mutex<HashMap<String, Arc<AtomicBool>>>);
+
+impl Browses {
+    pub fn insert(&self, id: &str, flag: Arc<AtomicBool>) -> AppResult<()> {
+        self.0
+            .lock()
+            .map_err(|_| AppError::internal("browse registry lock poisoned"))?
+            .insert(id.to_string(), flag);
+        Ok(())
+    }
+
+    pub fn remove(&self, id: &str) {
+        if let Ok(mut map) = self.0.lock() {
+            map.remove(id);
+        }
+    }
+
+    pub fn cancel(&self, id: &str) {
+        if let Ok(map) = self.0.lock() {
+            if let Some(flag) = map.get(id) {
+                flag.store(true, Ordering::Relaxed);
+            }
+        }
+    }
 }
 
 impl AppState {
@@ -41,6 +77,7 @@ impl AppState {
             profiles,
             secrets,
             guard: WriteGuard::new(Arc::new(log), Arc::new(SessionLocks::default())),
+            browses: Browses::default(),
         }
     }
 
