@@ -7,6 +7,7 @@
     import { environmentStyle } from "@/environments";
     import { toastError } from "@/ipc-service";
     import { connections } from "@/stores/connections.svelte";
+    import { modalsSettled } from "@/modal";
 
     let dialogOpen = $state(false);
     let editing = $state<Profile | null>(null);
@@ -19,8 +20,9 @@
     // The command palette links here with ?new=1 to open the dialog directly.
     afterNavigate(({ to }) => {
         if (to?.url.searchParams.get("new") === "1") {
-            add();
             replaceState("/connections", {});
+            // Usually arrives from the command palette, which may still be closing.
+            modalsSettled().then(add);
         }
     });
 

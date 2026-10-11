@@ -10,6 +10,7 @@
 	import EnvStrip from "$lib/components/app/env-strip.svelte";
 	import { toastError } from "@/ipc-service";
 	import { NAV } from "@/navigation";
+	import { modalsSettled } from "@/modal";
 	import { hasModifier } from "@/platform";
 	import { connections } from "@/stores/connections.svelte";
 
@@ -25,7 +26,8 @@
 		const key = event.key.toLowerCase();
 		if (key === "k") {
 			event.preventDefault();
-			paletteOpen = !paletteOpen;
+			if (paletteOpen) paletteOpen = false;
+			else modalsSettled().then(() => (paletteOpen = true));
 			return;
 		}
 		const target = NAV.find((item) => item.key === key);
@@ -45,7 +47,7 @@
 	<div class="bg-background flex h-screen flex-col overflow-hidden">
 		<EnvStrip />
 		<div class="flex min-h-0 flex-1">
-			<AppSidebar onsearch={() => (paletteOpen = true)} />
+			<AppSidebar onsearch={() => modalsSettled().then(() => (paletteOpen = true))} />
 			<div class="min-w-0 flex-1 overflow-y-auto" id="page">
 				{@render children?.()}
 			</div>
