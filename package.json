@@ -1,7 +1,13 @@
 {
   "name": "castle-keeper",
   "version": "0.1.0",
-  "description": "",
+  "description": "A fast desktop client for Apache Kafka with production safeguards.",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/axlsoft/castle-keeper.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite dev",
@@ -12,12 +18,8 @@
     "tauri": "tauri",
     "check:tauri-versions": "node scripts/check-tauri-versions.mjs"
   },
-  "license": "MIT",
   "dependencies": {
-    "@tauri-apps/api": "^2.12.3",
-    "@tauri-apps/plugin-opener": "^2.7.1",
-    "@tauri-apps/plugin-store": "^2.5.0",
-    "@tauri-apps/plugin-window-state": "^2.5.0"
+    "@tauri-apps/api": "^2.12.3"
   },
   "devDependencies": {
     "@lucide/svelte": "^1.55.0",
