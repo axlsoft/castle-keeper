@@ -9,6 +9,9 @@
     "url": "https://github.com/axlsoft/castle-keeper.git"
   },
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
