@@ -2,7 +2,9 @@
 //! operations commands build on.
 
 pub mod connection;
+pub mod groups;
 pub mod manager;
+pub mod offsets;
 pub mod produce;
 pub mod settings;
 pub mod topics;

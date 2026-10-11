@@ -9,7 +9,7 @@ export interface PaletteItem {
 
 class PaletteCommands {
     heading = $state("");
-    items = $state<PaletteItem[]>([]);
+    items = $state.raw<PaletteItem[]>([]);
 
     /** Replaces the page section; returns a cleanup that clears it. */
     set(heading: string, items: PaletteItem[]) {

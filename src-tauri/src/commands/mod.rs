@@ -16,6 +16,9 @@ pub fn specta_builder() -> Builder<tauri::Wry> {
     Builder::<tauri::Wry>::new()
         .commands(collect_commands![
             topics::list_topics,
+            topics::describe_topic,
+            topics::topic_configs,
+            topics::topic_consumers,
             produce::produce_message,
             profiles::list_profiles,
             profiles::create_profile,
