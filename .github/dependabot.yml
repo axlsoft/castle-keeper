@@ -38,3 +38,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+
+  # Kafka broker images used for local development and integration tests.
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"

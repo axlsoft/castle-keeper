@@ -16,7 +16,7 @@ npm run tauri dev
 
 ## Local Kafka cluster
 
-`compose.yaml` runs a single-node Apache Kafka 4.1 broker in KRaft mode, bound to
+`compose.yaml` runs a single-node Apache Kafka 4.3 broker in KRaft mode, bound to
 `127.0.0.1:9092` only.
 
 ```bash

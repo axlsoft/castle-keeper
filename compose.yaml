@@ -4,7 +4,7 @@ name: castle-keeper
 
 services:
   kafka:
-    image: docker.io/apache/kafka:4.1.0
+    image: docker.io/apache/kafka:4.3.1
     ports:
       - "127.0.0.1:9092:9092"
     environment:
@@ -32,7 +32,7 @@ services:
   # SASL broker for auth tests: PLAIN and SCRAM-SHA-256/512 on 127.0.0.1:9094.
   # Start with `docker compose --profile sasl up -d --wait`.
   kafka-sasl:
-    image: docker.io/apache/kafka:4.1.0
+    image: docker.io/apache/kafka:4.3.1
     profiles: [sasl]
     ports:
       - "127.0.0.1:9094:9094"
@@ -62,7 +62,7 @@ services:
 
   # Creates the SCRAM user once the SASL broker is up.
   kafka-sasl-users:
-    image: docker.io/apache/kafka:4.1.0
+    image: docker.io/apache/kafka:4.3.1
     profiles: [sasl]
     depends_on:
       kafka-sasl:
