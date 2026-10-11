@@ -1,6 +1,7 @@
 //! Kafka access: connection settings, the shared client manager, and the
 //! operations commands build on.
 
+pub mod browse;
 pub mod connection;
 pub mod groups;
 pub mod manager;

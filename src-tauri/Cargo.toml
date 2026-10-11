@@ -36,6 +36,7 @@ tracing = "0.1"
 uuid = { version = "1", features = ["v4"] }
 # macOS Keychain, Windows Credential Manager, Secret Service (D-Bus) on Linux.
 keyring = "4"
+base64 = "0.22"
 time = { version = "0.3", features = ["formatting"] }
 # Typed IPC bindings. Specta 2 is a release candidate, so versions are pinned.
 specta = { version = "=2.0.0-rc.25", features = ["derive"] }
@@ -50,6 +51,7 @@ rdkafka = { version = "0.39", features = ["ssl-vendored", "libz-static", "tracin
 
 [dev-dependencies]
 tempfile = "3"
+base64 = "0.22"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
 
 # librdkafka's configure/make build doesn't support MSVC; use CMake there.
