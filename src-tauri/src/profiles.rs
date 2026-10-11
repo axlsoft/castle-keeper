@@ -117,6 +117,13 @@ pub struct ProfileInput {
     pub admin_timeout_ms: Option<u32>,
     #[serde(default)]
     pub delivery_timeout_ms: Option<u32>,
+    /// `None` keeps the saved password, `Some("")` clears it, anything else
+    /// replaces it. Stored in the OS credential store only.
+    #[serde(default)]
+    pub sasl_password: Option<String>,
+    /// Same semantics as `sasl_password`, for an encrypted client key.
+    #[serde(default)]
+    pub tls_key_password: Option<String>,
 }
 
 impl ProfileInput {
@@ -442,6 +449,8 @@ mod tests {
             read_only: false,
             admin_timeout_ms: None,
             delivery_timeout_ms: None,
+            sasl_password: None,
+            tls_key_password: None,
         }
     }
 

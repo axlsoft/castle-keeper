@@ -34,6 +34,8 @@ thiserror = "2"
 tokio = { version = "1", features = ["rt", "time", "sync", "macros"] }
 tracing = "0.1"
 uuid = { version = "1", features = ["v4"] }
+# macOS Keychain, Windows Credential Manager, Secret Service (D-Bus) on Linux.
+keyring = "4"
 # Typed IPC bindings. Specta 2 is a release candidate, so versions are pinned.
 specta = { version = "=2.0.0-rc.25", features = ["derive"] }
 specta-typescript = "=0.0.12"

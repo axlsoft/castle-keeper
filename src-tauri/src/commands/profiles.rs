@@ -5,8 +5,8 @@ use tauri::State;
 use crate::{
     error::AppResult,
     kafka::connection::{self, ConnectionReport},
-    profiles::{Profile, ProfileInput, ProfileSecrets},
-    state::AppState,
+    profiles::{Profile, ProfileInput},
+    state::{take_passwords, AppState},
 };
 
 #[derive(Debug, Clone, Serialize, Type)]
@@ -28,7 +28,7 @@ pub fn list_profiles(state: State<'_, AppState>) -> AppResult<ProfileList> {
 #[tauri::command]
 #[specta::specta]
 pub fn create_profile(state: State<'_, AppState>, input: ProfileInput) -> AppResult<Profile> {
-    let profile = state.profiles.create(input)?;
+    let profile = state.create_profile(input)?;
     tracing::info!(profile = %profile.name, environment = ?profile.environment, "connection created");
     Ok(profile)
 }
@@ -40,8 +40,7 @@ pub fn update_profile(
     id: String,
     input: ProfileInput,
 ) -> AppResult<Profile> {
-    let profile = state.profiles.update(&id, input)?;
-    state.clients.evict(&id);
+    let profile = state.update_profile(&id, input)?;
     tracing::info!(profile = %profile.name, "connection updated");
     Ok(profile)
 }
@@ -49,8 +48,7 @@ pub fn update_profile(
 #[tauri::command]
 #[specta::specta]
 pub fn delete_profile(state: State<'_, AppState>, id: String) -> AppResult<()> {
-    let removed = state.profiles.delete(&id)?;
-    state.clients.evict(&id);
+    let removed = state.delete_profile(&id)?;
     tracing::info!(profile = %removed.name, "connection deleted");
     Ok(())
 }
@@ -63,13 +61,20 @@ pub fn select_profile(state: State<'_, AppState>, id: String) -> AppResult<Profi
     Ok(profile)
 }
 
-/// Connects with unsaved settings and reports what was found.
+/// Connects with unsaved settings and reports what was found. When editing
+/// an existing connection (`profile_id`), its stored passwords are used for
+/// any password field left untouched.
 #[tauri::command]
 #[specta::specta]
-pub async fn test_connection(input: ProfileInput) -> AppResult<ConnectionReport> {
+pub async fn test_connection(
+    state: State<'_, AppState>,
+    mut input: ProfileInput,
+    profile_id: Option<String>,
+) -> AppResult<ConnectionReport> {
     input.validate()?;
+    let typed = take_passwords(&mut input);
     let profile = input.preview();
-    let settings = profile.connection_settings(&ProfileSecrets::default());
+    let settings = state.settings_for(&profile, profile_id.as_deref(), &typed)?;
     let result = connection::test_connection(settings).await;
     match &result {
         Ok(report) => tracing::info!(
