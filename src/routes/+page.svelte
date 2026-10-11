@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import Input from "@/components/ui/input/input.svelte";
-  import { send_ipc } from "@/ipc-service";
+  import { send_ipc, toastError } from "@/ipc-service";
   import type { KafkaMessageRequest, KafkaMessageResponse } from "@/model/kafka_message";
   import { toast } from "svelte-sonner";
 
@@ -16,7 +16,7 @@
       toast.success(`Produced to partition ${result.partition} at offset ${result.offset}`);
       value = "";
     } catch (error) {
-      toast.error(String(error));
+      toastError(error);
     }
   }
 </script>

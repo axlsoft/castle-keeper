@@ -5,6 +5,8 @@ use rdkafka::{
     ClientConfig,
 };
 
+use crate::error::AppResult;
+
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct PublishMessage {
     pub key: String,
@@ -18,17 +20,16 @@ pub struct PublisherResult {
 }
 
 #[tauri::command]
-pub async fn send_message(message: PublishMessage) -> Result<PublisherResult, String> {
+pub async fn send_message(message: PublishMessage) -> AppResult<PublisherResult> {
     let producer: FutureProducer = ClientConfig::new()
         .set("bootstrap.servers", "localhost:9092")
-        .create()
-        .expect("Producer creation error");
+        // Fail a stuck delivery in seconds rather than librdkafka's 5 minute default.
+        .set("message.timeout.ms", "15000")
+        .create()?;
 
     let topic = "my_topic";
 
-    // Depending on the message type, you might serialize 'value' differently.
-    // For now, we assume the 'value' is already formatted correctly.
-    match producer
+    let delivery = producer
         .send(
             FutureRecord::to(topic)
                 .payload(&message.value)
@@ -36,18 +37,10 @@ pub async fn send_message(message: PublishMessage) -> Result<PublisherResult, St
             Duration::from_secs(0),
         )
         .await
-    {
-        Ok(delivery) => {
-            let (partition, offset) = (delivery.partition, delivery.offset);
-            println!(
-                "Message delivered: partition: {}, offset: {}",
-                partition, offset
-            );
-            Ok(PublisherResult { partition, offset })
-        }
-        Err((e, _message)) => {
-            eprintln!("Error delivering message: {:?}", e);
-            Err("Error delivering message".into())
-        }
-    }
+        .map_err(|(error, _message)| error)?;
+
+    Ok(PublisherResult {
+        partition: delivery.partition,
+        offset: delivery.offset,
+    })
 }

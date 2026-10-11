@@ -1,15 +1,15 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { send_ipc } from "@/ipc-service";
+    import { send_ipc, type AppError } from "@/ipc-service";
 
     let topics = $state<string[]>([]);
-    let error = $state<string | null>(null);
+    let error = $state<AppError | null>(null);
 
     onMount(async () => {
         try {
             topics = await send_ipc<string[]>("get_topics");
         } catch (e) {
-            error = String(e);
+            error = e as AppError;
         }
     });
 </script>
@@ -17,7 +17,8 @@
 <main class="container py-8">
     <h1 class="text-lg font-semibold">Cluster Management</h1>
     {#if error}
-        <p class="text-destructive mt-2 text-sm">{error}</p>
+        <p class="text-destructive mt-2 text-sm">{error.message}</p>
+        {#if error.hint}<p class="text-muted-foreground mt-1 text-sm">{error.hint}</p>{/if}
     {:else}
         <ul class="mt-4 font-mono text-sm">
             {#each topics as topic (topic)}
