@@ -27,6 +27,20 @@ docker compose down           # stop it (add -v to also drop data)
 With Podman, `podman compose` or `docker-compose` against the Podman socket work the
 same way.
 
+### Sample data
+
+`scripts/seed.sh` fills the local broker with realistic data: `orders` (6
+partitions, JSON with headers), `payments`, a compacted `customers` topic,
+`audit.log`, `metrics.raw` (12 partitions) and `dlq.orders`, plus a lagging
+consumer group (`billing-service`) and two caught-up, member-less groups
+(`analytics`, `reporting`). It only talks to the compose broker and is safe to
+re-run.
+
+```bash
+docker compose up -d --wait
+scripts/seed.sh
+```
+
 List topics from inside the container:
 
 ```bash

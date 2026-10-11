@@ -52,6 +52,7 @@ rdkafka = { version = "0.39", features = ["ssl-vendored", "libz-static", "tracin
 [dev-dependencies]
 tempfile = "3"
 base64 = "0.22"
+serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
 
 # librdkafka's configure/make build doesn't support MSVC; use CMake there.
