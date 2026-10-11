@@ -1,4 +1,5 @@
 pub mod actions;
+pub mod groups;
 pub mod produce;
 pub mod profiles;
 pub mod topics;
@@ -19,6 +20,8 @@ pub fn specta_builder() -> Builder<tauri::Wry> {
             topics::describe_topic,
             topics::topic_configs,
             topics::topic_consumers,
+            groups::list_groups,
+            groups::describe_group,
             produce::produce_message,
             profiles::list_profiles,
             profiles::create_profile,

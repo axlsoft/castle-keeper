@@ -16,6 +16,13 @@ export const commands = {
 	topicConfigs: (name: string) => __TAURI_INVOKE<TopicConfigEntry[]>("topic_configs", { name }),
 	topicConsumers: (name: string) => __TAURI_INVOKE<TopicConsumer[]>("topic_consumers", { name }),
 	/**
+	 *  Every consumer group in the active cluster with state, members, topics
+	 *  and total lag.
+	 */
+	listGroups: () => __TAURI_INVOKE<GroupSummary[]>("list_groups"),
+	/**  Members and per-partition committed offset, log end offset and lag. */
+	describeGroup: (groupId: string) => __TAURI_INVOKE<GroupDetail>("describe_group", { groupId }),
+	/**
 	 *  Produces one message to the active connection, subject to the write
 	 *  guard. `dry_run` validates and previews without sending.
 	 */
@@ -124,6 +131,34 @@ export type ErrorKind =
 /**  A bug or unexpected state inside the app. */
 "internal";
 
+export type GroupDetail = {
+	groupId: string,
+	state: string,
+	protocolType: string,
+	protocol: string,
+	members: GroupMember[],
+	partitions: PartitionLag[],
+	totalLag: number | null,
+};
+
+export type GroupMember = {
+	memberId: string,
+	clientId: string,
+	host: string,
+	assignment: TopicAssignment[],
+};
+
+export type GroupSummary = {
+	groupId: string,
+	/**  Broker-reported state: Stable, Empty, PreparingRebalance, Dead, ... */
+	state: string,
+	protocolType: string,
+	members: number,
+	topics: string[],
+	/**  Sum of per-partition lag; null when the group has no committed offsets. */
+	totalLag: number | null,
+};
+
 export type ImportedConnection = {
 	bootstrap: string | null,
 	sasl: SaslConfig | null,
@@ -152,6 +187,19 @@ export type PartitionInfo = {
 	isr: number[],
 	low: number,
 	high: number,
+};
+
+export type PartitionLag = {
+	topic: string,
+	partition: number,
+	committed: number | null,
+	logEnd: number,
+	/**  log end − committed; null when nothing is committed. */
+	lag: number | null,
+	/**  Member currently assigned this partition, if any. */
+	memberId: string | null,
+	clientId: string | null,
+	host: string | null,
 };
 
 export type ProduceOutcome = {
@@ -230,6 +278,11 @@ export type TlsConfig = {
 	certPath?: string | null,
 	keyPath?: string | null,
 	verifyHostname?: boolean,
+};
+
+export type TopicAssignment = {
+	topic: string,
+	partitions: number[],
 };
 
 export type TopicConfigEntry = {
