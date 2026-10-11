@@ -6,23 +6,9 @@ use rdkafka::{
 };
 
 #[derive(Debug, Clone, serde::Deserialize)]
-pub enum MessageType {
-    Primitive,
-    Json,
-    Avro,
-    Protobuf,
-}
-
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct MessageMetadata {
-    pub message_type: MessageType,
-}
-
-#[derive(Debug, Clone, serde::Deserialize)]
 pub struct PublishMessage {
     pub key: String,
     pub value: String,
-    pub metadata: MessageMetadata,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -56,10 +42,7 @@ pub async fn send_message(message: PublishMessage) -> Result<PublisherResult, St
                 "Message delivered: partition: {}, offset: {}",
                 partition, offset
             );
-            Ok(PublisherResult {
-                partition,
-                offset
-            })
+            Ok(PublisherResult { partition, offset })
         }
         Err((e, _message)) => {
             eprintln!("Error delivering message: {:?}", e);

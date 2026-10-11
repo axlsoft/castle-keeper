@@ -1,4 +1,3 @@
-
 #[tauri::command]
 pub fn greet(name: &str) -> Result<String, String> {
     if name.trim().is_empty() {
