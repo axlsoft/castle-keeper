@@ -33,6 +33,42 @@ List topics from inside the container:
 docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 ```
 
+### SASL broker
+
+The `sasl` compose profile adds a second broker on `127.0.0.1:9094` that accepts
+SASL/PLAIN, SCRAM-SHA-256 and SCRAM-SHA-512 (`SASL_PLAINTEXT`). The test user is
+`alice` / `alice-secret`. These credentials are for localhost only.
+
+```bash
+docker compose --profile sasl up -d --wait
+```
+
+### Integration tests
+
+Integration tests are skipped unless their broker address is set:
+
+```bash
+cd src-tauri
+CK_IT_BOOTSTRAP=127.0.0.1:9092 CK_IT_SASL_BOOTSTRAP=127.0.0.1:9094 cargo test -- --test-threads=1
+```
+
+## Native dependencies
+
+The Kafka client (librdkafka) is compiled into the app together with OpenSSL
+and zlib, so release builds depend only on libraries the OS provides. SASL/PLAIN
+and SCRAM are built into librdkafka.
+
+Kerberos (SASL/GSSAPI) is behind the off-by-default `kerberos` cargo feature. It
+links the system Cyrus SASL and krb5 libraries (Linux: `libsasl2-dev`,
+`libkrb5-dev`) and is Unix-only. Kerberos on Windows (SSPI) is not supported.
+
+```bash
+cd src-tauri && cargo build --features kerberos
+```
+
+On Windows, librdkafka is built with CMake, so CMake must be on `PATH` (it is on
+GitHub's Windows runners and in Visual Studio's C++ workload).
+
 ## Checks
 
 Run these before committing. CI runs the same set.
