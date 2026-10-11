@@ -51,7 +51,7 @@
   }
 </script>
 
-<main class="container mx-auto flex max-w-lg flex-col gap-4 py-10">
+<main class="flex max-w-xl flex-col gap-4 p-6">
   <div class="flex items-center justify-between">
     <h1 class="text-lg font-semibold">Produce a message</h1>
     {#if active}

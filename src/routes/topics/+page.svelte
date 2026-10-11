@@ -15,8 +15,8 @@
     });
 </script>
 
-<main class="container py-8">
-    <h1 class="text-lg font-semibold">Cluster Management</h1>
+<main class="p-6">
+    <h1 class="text-lg font-semibold">Topics</h1>
     {#if error}
         <p class="text-destructive mt-2 text-sm">{error.message}</p>
         {#if error.hint}<p class="text-muted-foreground mt-1 text-sm">{error.hint}</p>{/if}

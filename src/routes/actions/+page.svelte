@@ -49,7 +49,7 @@
     const time = (iso: string) => new Date(iso).toLocaleString();
 </script>
 
-<main class="container py-8">
+<main class="p-6">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-lg font-semibold">Action log</h1>
