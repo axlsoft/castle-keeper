@@ -6,6 +6,8 @@
     import { Button } from "$lib/components/ui/button";
     import ErrorState from "$lib/components/app/error-state.svelte";
     import SkeletonRows from "$lib/components/app/skeleton-rows.svelte";
+    import CopyCli from "$lib/components/app/copy-cli.svelte";
+    import { topicCommands } from "@/cli";
     import { commands, type TopicConfigEntry, type TopicConsumer, type TopicDetail } from "@/bindings";
     import { SwrCache, ago } from "@/stores/cache.svelte";
     import { connections } from "@/stores/connections.svelte";
@@ -94,6 +96,7 @@
                 {detail?.loading ? "Refreshing…" : `Updated ${ago(detail?.fetchedAt ?? null)}`}
             </span>
             <Button size="sm" variant="ghost" onclick={refresh} aria-label="Refresh"><RefreshCw class="size-4" /></Button>
+            {#if connections.active}<CopyCli commands={topicCommands(connections.active, name)} />{/if}
             <Button size="sm" variant="outline" onclick={() => goto(`/messages?topic=${encodeURIComponent(name)}`)}>
                 Browse messages
             </Button>

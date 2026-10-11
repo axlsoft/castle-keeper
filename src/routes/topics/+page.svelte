@@ -6,6 +6,8 @@
     import ErrorState from "$lib/components/app/error-state.svelte";
     import SkeletonRows from "$lib/components/app/skeleton-rows.svelte";
     import VirtualList from "$lib/components/app/virtual-list.svelte";
+    import CopyCli from "$lib/components/app/copy-cli.svelte";
+    import { topicListCommands } from "@/cli";
     import type { TopicSummary } from "@/bindings";
     import { ago } from "@/stores/cache.svelte";
     import { connections } from "@/stores/connections.svelte";
@@ -96,6 +98,7 @@
             <span class="text-muted-foreground text-xs" title="Topics are cached per connection">
                 {entry?.loading ? "Refreshing…" : `Updated ${ago(entry?.fetchedAt ?? null, now)}`}
             </span>
+            {#if connections.active}<CopyCli commands={topicListCommands(connections.active)} />{/if}
             <Button size="sm" variant="ghost" onclick={() => key && topicsCache.refresh(key)} disabled={!key || entry?.loading} aria-label="Refresh topics">
                 <RefreshCw class="size-4 {entry?.loading ? 'animate-spin' : ''}" />
             </Button>

@@ -84,6 +84,7 @@ Run these before committing. CI runs the same set.
 
 ```bash
 npm run check
+npm test
 npm run build
 npm run check:tauri-versions
 (cd src-tauri && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test)

@@ -18,7 +18,8 @@
     "tauri": "tauri",
     "check:tauri-versions": "node scripts/check-tauri-versions.mjs",
     "bindings": "cd src-tauri && cargo test --lib typescript_bindings_are_up_to_date",
-    "test:integration": "bash scripts/test-integration.sh"
+    "test:integration": "bash scripts/test-integration.sh",
+    "test": "vitest run"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.3"
@@ -41,7 +42,8 @@
     "tailwindcss": "^4.1.16",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~6.0.3",
-    "vite": "^8.1.2"
+    "vite": "^8.1.2",
+    "vitest": "^5.0.3"
   },
   "overrides": {
     "cookie": "0.7.0"

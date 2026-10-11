@@ -5,6 +5,8 @@
     import ErrorState from "$lib/components/app/error-state.svelte";
     import SkeletonRows from "$lib/components/app/skeleton-rows.svelte";
     import VirtualList from "$lib/components/app/virtual-list.svelte";
+    import CopyCli from "$lib/components/app/copy-cli.svelte";
+    import { groupListCommands } from "@/cli";
     import type { GroupSummary } from "@/bindings";
     import { ACTIVE_STATES, formatLag, lagClass } from "@/lag";
     import { ago } from "@/stores/cache.svelte";
@@ -114,6 +116,7 @@
         </div>
         <div class="ml-auto flex items-center gap-2">
             <span class="text-muted-foreground text-xs">{entry?.loading ? "Refreshing…" : `Updated ${ago(entry?.fetchedAt ?? null)}`}</span>
+            {#if connections.active}<CopyCli commands={groupListCommands(connections.active)} />{/if}
             <Button size="sm" variant="ghost" onclick={() => key && groupsCache.refresh(key)} aria-label="Refresh groups">
                 <RefreshCw class="size-4 {entry?.loading ? 'animate-spin' : ''}" />
             </Button>
