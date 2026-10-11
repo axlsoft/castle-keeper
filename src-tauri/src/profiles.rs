@@ -152,10 +152,10 @@ impl ProfileInput {
                 );
             }
         }
-        if let Some(sasl) = &self.sasl {
-            if sasl.username.trim().is_empty() {
-                return Err(AppError::invalid_input("SASL needs a username."));
-            }
+        if let Some(sasl) = &self.sasl
+            && sasl.username.trim().is_empty()
+        {
+            return Err(AppError::invalid_input("SASL needs a username."));
         }
         Ok(())
     }
@@ -292,7 +292,7 @@ impl ProfileStore {
                 return Err(AppError::new(
                     ErrorKind::Config,
                     format!("could not read {}: {e}", path.display()),
-                ))
+                ));
             }
         };
         Ok(Self {

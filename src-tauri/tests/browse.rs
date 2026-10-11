@@ -4,22 +4,22 @@
 mod common;
 
 use std::{
-    sync::{atomic::AtomicBool, Arc},
+    sync::{Arc, atomic::AtomicBool},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use castle_keeper_lib::kafka::{
-    browse::{browse, BrowseEvent, BrowseRequest, BrowsedMessage, StartPosition, StopReason},
+    browse::{BrowseEvent, BrowseRequest, BrowsedMessage, StartPosition, StopReason, browse},
     manager::{ClientManager, ClusterClients},
     settings::ConnectionSettings,
 };
 use rdkafka::{
+    ClientConfig,
     admin::{AdminOptions, NewTopic, TopicReplication},
     consumer::Consumer,
     message::{Header, OwnedHeaders},
     producer::{FutureProducer, FutureRecord},
-    ClientConfig,
 };
 
 const PER_PARTITION: i32 = 20;
@@ -158,19 +158,23 @@ async fn browsing_reads_ranges_and_never_creates_a_group() {
             .fetch_watermarks(topic, p, Duration::from_secs(5))
             .unwrap()
             .1;
-        assert!(latest
-            .iter()
-            .filter(|m| m.partition == p)
-            .all(|m| m.offset >= high - 5));
+        assert!(
+            latest
+                .iter()
+                .filter(|m| m.partition == p)
+                .all(|m| m.offset >= high - 5)
+        );
     }
 
     let (from_offset, _) = run(
         &clients,
         request(StartPosition::Offset { offset: 15 }, vec![1], 10_000),
     );
-    assert!(from_offset
-        .iter()
-        .all(|m| m.partition == 1 && m.offset >= 15));
+    assert!(
+        from_offset
+            .iter()
+            .all(|m| m.partition == 1 && m.offset >= 15)
+    );
     assert_eq!(from_offset.first().map(|m| m.offset), Some(15));
 
     let (limited, reason) = run(&clients, request(StartPosition::Earliest, vec![], 7));

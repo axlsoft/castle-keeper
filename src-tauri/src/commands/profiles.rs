@@ -7,7 +7,7 @@ use crate::{
     import::{self, ImportedConnection},
     kafka::connection::{self, ConnectionReport},
     profiles::{Profile, ProfileInput},
-    state::{take_passwords, AppState},
+    state::{AppState, take_passwords},
 };
 
 #[derive(Debug, Clone, Serialize, Type)]

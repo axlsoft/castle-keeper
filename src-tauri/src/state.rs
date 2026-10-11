@@ -2,8 +2,8 @@ use std::{
     collections::HashMap,
     path::Path,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
     },
 };
 
@@ -45,10 +45,10 @@ impl Browses {
     }
 
     pub fn cancel(&self, id: &str) {
-        if let Ok(map) = self.0.lock() {
-            if let Some(flag) = map.get(id) {
-                flag.store(true, Ordering::Relaxed);
-            }
+        if let Ok(map) = self.0.lock()
+            && let Some(flag) = map.get(id)
+        {
+            flag.store(true, Ordering::Relaxed);
         }
     }
 }

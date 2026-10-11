@@ -11,10 +11,10 @@ use castle_keeper_lib::kafka::{
     settings::ConnectionSettings,
 };
 use rdkafka::{
+    ClientConfig, Offset, TopicPartitionList,
     admin::{AdminOptions, NewTopic, TopicReplication},
     consumer::{BaseConsumer, CommitMode, Consumer},
     producer::{FutureProducer, FutureRecord},
-    ClientConfig, Offset, TopicPartitionList,
 };
 
 const TOPIC: &str = "ck-it-groups";

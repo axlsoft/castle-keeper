@@ -13,7 +13,7 @@ use castle_keeper_lib::{
     guard::WriteRequest,
     kafka::{
         manager::ClientManager,
-        produce::{produce, ProduceRequest},
+        produce::{ProduceRequest, produce},
         settings::ConnectionSettings,
         topics::list_topic_names,
     },

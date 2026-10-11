@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    audit::{now_rfc3339, ActionEntry, ActionLog, Outcome, WriteAction},
+    audit::{ActionEntry, ActionLog, Outcome, WriteAction, now_rfc3339},
     error::{AppError, AppResult, ErrorKind},
     profiles::{Environment, Profile},
 };
@@ -99,15 +99,15 @@ impl WriteGuard {
             detail: None,
         };
 
-        if !request.dry_run {
-            if let Err(error) = self.check(profile, &request) {
-                let blocked = ActionEntry {
-                    detail: Some(error.message.clone()),
-                    ..entry
-                };
-                self.log.append(&blocked)?;
-                return Err(error);
-            }
+        if !request.dry_run
+            && let Err(error) = self.check(profile, &request)
+        {
+            let blocked = ActionEntry {
+                detail: Some(error.message.clone()),
+                ..entry
+            };
+            self.log.append(&blocked)?;
+            return Err(error);
         }
 
         Ok(WriteTicket {

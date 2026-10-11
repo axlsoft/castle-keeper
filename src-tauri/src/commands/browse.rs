@@ -1,6 +1,6 @@
-use std::sync::{atomic::AtomicBool, Arc};
+use std::sync::{Arc, atomic::AtomicBool};
 
-use tauri::{ipc::Channel, State};
+use tauri::{State, ipc::Channel};
 
 use crate::{
     error::{AppError, AppResult},

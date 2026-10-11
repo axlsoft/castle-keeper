@@ -13,9 +13,9 @@ mod common;
 use std::time::Duration;
 
 use rdkafka::{
+    ClientConfig,
     consumer::{BaseConsumer, Consumer},
     error::KafkaResult,
-    ClientConfig,
 };
 
 fn fetch_metadata(

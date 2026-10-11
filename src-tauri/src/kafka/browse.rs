@@ -7,19 +7,19 @@
 use std::{
     collections::HashMap,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc,
+        atomic::{AtomicBool, Ordering},
     },
     time::{Duration, Instant},
 };
 
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use rdkafka::{
+    Offset, Timestamp, TopicPartitionList,
     consumer::{BaseConsumer, Consumer},
     error::KafkaError,
     message::{Headers, Message},
     types::RDKafkaErrorCode,
-    Offset, Timestamp, TopicPartitionList,
 };
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -363,10 +363,10 @@ pub fn browse(
             break StopReason::Limit;
         }
         if last_message.elapsed() > timeout {
-            if count == 0 {
-                if let Some(error) = last_error.take() {
-                    return Err(error.into());
-                }
+            if count == 0
+                && let Some(error) = last_error.take()
+            {
+                return Err(error.into());
             }
             break StopReason::Idle;
         }

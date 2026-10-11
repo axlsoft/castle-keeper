@@ -9,13 +9,13 @@ use castle_keeper_lib::kafka::{
     manager::ClientManager,
     offsets::watermarks,
     settings::ConnectionSettings,
-    topics::{describe_topic, list_topics, topic_configs, topic_consumers, ConfigOrigin},
+    topics::{ConfigOrigin, describe_topic, list_topics, topic_configs, topic_consumers},
 };
 use rdkafka::{
+    ClientConfig, Offset, TopicPartitionList,
     admin::{AdminOptions, NewTopic, TopicReplication},
     consumer::{BaseConsumer, Consumer},
     producer::{FutureProducer, FutureRecord},
-    ClientConfig, Offset, TopicPartitionList,
 };
 
 const TOPIC: &str = "ck-it-topics";
@@ -91,10 +91,12 @@ async fn topic_views_against_live_broker() {
 
     let detail = describe_topic(clients.clone(), TOPIC.into()).await.unwrap();
     assert_eq!(detail.partitions.len(), 3);
-    assert!(detail
-        .partitions
-        .iter()
-        .all(|p| p.leader == 1 && p.isr == vec![1]));
+    assert!(
+        detail
+            .partitions
+            .iter()
+            .all(|p| p.leader == 1 && p.isr == vec![1])
+    );
     assert!(detail.message_count >= 30);
 
     // The batched lookup agrees with per-partition watermark queries.

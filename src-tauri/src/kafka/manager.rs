@@ -4,8 +4,8 @@
 use std::{
     collections::HashMap,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc, Mutex, RwLock,
+        atomic::{AtomicBool, Ordering},
     },
     time::Duration,
 };
@@ -143,10 +143,10 @@ impl ClientManager {
                 .clients
                 .read()
                 .map_err(|_| AppError::internal("client cache lock poisoned"))?;
-            if let Some(existing) = clients.get(&settings.id) {
-                if existing.settings == *settings {
-                    return Ok(existing.clone());
-                }
+            if let Some(existing) = clients.get(&settings.id)
+                && existing.settings == *settings
+            {
+                return Ok(existing.clone());
             }
         }
         let fresh = Arc::new(ClusterClients::connect(settings.clone())?);

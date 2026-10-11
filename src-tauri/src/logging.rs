@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use tracing_appender::non_blocking::WorkerGuard;
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 const DEFAULT_FILTER: &str = "info,castle_keeper_lib=debug,librdkafka=info,rdkafka=info";
 

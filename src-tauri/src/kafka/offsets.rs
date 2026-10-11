@@ -5,8 +5,8 @@
 use std::{collections::HashMap, time::Duration};
 
 use rdkafka::{
-    consumer::{BaseConsumer, Consumer},
     Offset, TopicPartitionList,
+    consumer::{BaseConsumer, Consumer},
 };
 
 use crate::error::AppResult;

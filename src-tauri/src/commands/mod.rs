@@ -7,7 +7,7 @@ pub mod topics;
 
 #[cfg(any(test, debug_assertions))]
 use specta_typescript::Typescript;
-use tauri_specta::{collect_commands, Builder, ErrorHandlingMode};
+use tauri_specta::{Builder, ErrorHandlingMode, collect_commands};
 
 /// The generated TypeScript bindings in the frontend source tree.
 #[cfg(any(test, debug_assertions))]

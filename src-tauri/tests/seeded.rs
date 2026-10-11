@@ -6,13 +6,13 @@ mod common;
 
 use std::{sync::atomic::AtomicBool, time::Duration};
 
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
 use castle_keeper_lib::kafka::{
-    browse::{browse, BrowseEvent, BrowseRequest, StartPosition},
+    browse::{BrowseEvent, BrowseRequest, StartPosition, browse},
     groups::list_groups,
     manager::ClientManager,
     settings::ConnectionSettings,
-    topics::{list_topics, topic_configs, ConfigOrigin},
+    topics::{ConfigOrigin, list_topics, topic_configs},
 };
 use rdkafka::consumer::Consumer;
 

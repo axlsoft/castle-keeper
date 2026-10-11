@@ -114,7 +114,7 @@ impl ActionLog {
                 return Err(AppError::internal(format!(
                     "could not read the action log at {}: {e}",
                     self.path.display()
-                )))
+                )));
             }
         };
         let mut entries: Vec<ActionEntry> = std::io::BufReader::new(file)
