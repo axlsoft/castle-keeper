@@ -24,7 +24,13 @@ async fn refused_connection_is_reported_as_unreachable() {
         .await
         .unwrap_err();
     assert_eq!(error.kind, ErrorKind::Unreachable, "{error:?}");
-    assert!(error.message.contains("refused"), "{}", error.message);
+    // The reason text comes from the OS ("Connection refused" on Unix,
+    // "Unknown error" on Windows); the address it names is stable.
+    assert!(
+        error.message.contains(common::CLOSED_PORT),
+        "{}",
+        error.message
+    );
     assert!(error.hint.is_some());
 }
 
