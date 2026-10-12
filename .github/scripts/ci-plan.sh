@@ -43,7 +43,7 @@ if [[ "$EVENT" == "pull_request" ]]; then
     frontend=false
     rust=false
     kerberos=false
-    changed "$ci|^(src/|static/|package(-lock)?\.json$|vite\.config\.js$|tsconfig\.json$|components\.json$|\.nvmrc$|scripts/check-tauri-versions\.mjs$|src-tauri/Cargo\.lock$)" && frontend=true
+    changed "$ci|^(src/|static/|package(-lock)?\.json$|vite\.config\.js$|tsconfig\.json$|components\.json$|\.nvmrc$|scripts/[^/]+\.mjs$|src-tauri/(Cargo\.(toml|lock)|tauri\.conf\.json)$)" && frontend=true
     # The bindings test compares src/lib/bindings.ts with the Rust types.
     changed "$ci|^(src-tauri/|src/lib/bindings\.ts$|compose\.yaml$|dev/|scripts/(seed|test-integration)\.sh$)" && rust=true
     changed "$ci|^src-tauri/Cargo\.(toml|lock)$" && kerberos=true

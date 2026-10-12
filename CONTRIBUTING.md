@@ -101,6 +101,7 @@ npm run check
 npm test
 npm run build
 npm run check:tauri-versions
+npm run check:version
 (cd src-tauri && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test)
 ```
 
@@ -123,3 +124,30 @@ major.minor version. Bump them together.
 
 Branch protection should require the **CI result** check, which passes when
 every planned job passed and ignores jobs the plan skipped.
+
+## Releasing
+
+The app version lives in `package.json`, `package-lock.json`,
+`src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `src-tauri/Cargo.lock`.
+Don't edit it by hand. From an up-to-date `main`:
+
+```bash
+npm run release -- 0.2.0 --dry-run   # optional preview
+npm run release -- 0.2.0             # bump, commit and tag v0.2.0 locally
+git push --atomic origin main v0.2.0
+```
+
+Versions are `MAJOR.MINOR.PATCH`, or `MAJOR.MINOR.PATCH-N` for a pre-release,
+because Windows MSI installers reject anything else.
+
+Pushing the tag runs CI on all four platforms. CI fails straight away if the
+tag doesn't match the version in those files. When every job passes, the
+**Draft release** job creates a draft GitHub Release. It attaches the installers
+(`.dmg` for macOS arm64 and x86_64, `.msi` and `-setup.exe` for Windows, and
+`.deb`, `.rpm` and `.AppImage` for Linux), a `SHA256SUMS` file and notes
+generated from merged pull requests. Review the draft on the Releases page,
+edit the notes if needed, then publish it. Re-running a tag build refreshes the
+files on the existing draft.
+
+The installers are unsigned. On macOS, users have to right-click the app and
+choose Open the first time. On Windows, SmartScreen warns before installing.

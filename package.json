@@ -22,7 +22,9 @@
     "check:tauri-versions": "node scripts/check-tauri-versions.mjs",
     "bindings": "cd src-tauri && cargo test --lib typescript_bindings_are_up_to_date",
     "test:integration": "bash scripts/test-integration.sh",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:version": "node scripts/check-version.mjs",
+    "release": "node scripts/release.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.3"
