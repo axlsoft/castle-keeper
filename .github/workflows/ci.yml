@@ -100,7 +100,7 @@ jobs:
             Windows)
               vswhere="/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
               dumpbin="$("$vswhere" -latest -find 'VC/Tools/MSVC/**/bin/Hostx64/x64/dumpbin.exe' | head -n1)"
-              "$dumpbin" /dependents src-tauri/target/${{ matrix.target }}/release/castle-keeper.exe ;;
+              "$dumpbin" -dependents src-tauri/target/${{ matrix.target }}/release/castle-keeper.exe ;;
           esac
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
