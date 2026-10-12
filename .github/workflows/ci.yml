@@ -1,10 +1,26 @@
 name: CI
 
+# What runs when is decided by .github/scripts/ci-plan.sh (see its header):
+# pull requests check only what changed and build no installers; main and
+# release tags build installers; manual runs pick their platforms.
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
+  schedule:
+    # Weekly Linux run, which includes the Kerberos build.
+    - cron: "0 6 * * 1"
   workflow_dispatch:
+    inputs:
+      platforms:
+        description: "Comma-separated: linux-x86_64, windows-x86_64, macos-arm64, macos-x86_64, or all"
+        type: string
+        default: all
+      bundles:
+        description: "Build release installers"
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -16,10 +32,38 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+  # Test and clippy builds don't need full debug info; this mostly saves
+  # link time (noticeably on Windows).
+  CARGO_PROFILE_DEV_DEBUG: line-tables-only
+  CARGO_PROFILE_TEST_DEBUG: line-tables-only
 
 jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.plan.outputs.frontend }}
+      rust: ${{ steps.plan.outputs.rust }}
+      kerberos: ${{ steps.plan.outputs.kerberos }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Pull requests diff against their base commit.
+          fetch-depth: 0
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PLATFORMS: ${{ inputs.platforms }}
+          BUNDLES: ${{ inputs.bundles }}
+        run: bash .github/scripts/ci-plan.sh
+
   frontend:
     name: Frontend
+    needs: plan
+    if: needs.plan.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -38,23 +82,12 @@ jobs:
 
   rust:
     name: Rust (${{ matrix.name }})
+    needs: plan
+    if: needs.plan.outputs.rust == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: linux-x86_64
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-          - name: windows-x86_64
-            os: windows-latest
-            target: x86_64-pc-windows-msvc
-          - name: macos-arm64
-            os: macos-latest
-            target: aarch64-apple-darwin
-          - name: macos-x86_64
-            os: macos-15-intel
-            target: x86_64-apple-darwin
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -70,6 +103,7 @@ jobs:
         with:
           workspaces: src-tauri
           key: ${{ matrix.target }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Linux system dependencies
         if: runner.os == 'Linux'
         run: |
@@ -88,10 +122,12 @@ jobs:
       - name: cargo test
         working-directory: src-tauri
         run: cargo test --target ${{ matrix.target }}
-      # Unsigned installers/bundles for each target.
+      # Unsigned installers/bundles; only when the plan asks for them.
       - name: tauri build
+        if: matrix.bundle
         run: npx tauri build --ci --target ${{ matrix.target }}
       - name: Dynamic linkage
+        if: matrix.bundle
         shell: bash
         run: |
           case "${{ runner.os }}" in
@@ -103,6 +139,7 @@ jobs:
               "$dumpbin" -dependents src-tauri/target/${{ matrix.target }}/release/castle-keeper.exe ;;
           esac
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.bundle
         with:
           name: castle-keeper-${{ matrix.name }}
           path: src-tauri/target/${{ matrix.target }}/release/bundle/
@@ -110,6 +147,8 @@ jobs:
 
   kerberos:
     name: Kerberos feature (Linux)
+    needs: plan
+    if: needs.plan.outputs.kerberos == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -124,6 +163,7 @@ jobs:
         with:
           workspaces: src-tauri
           key: kerberos
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
@@ -134,6 +174,8 @@ jobs:
 
   integration:
     name: Integration (local Kafka)
+    needs: plan
+    if: needs.plan.outputs.rust == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -148,6 +190,7 @@ jobs:
         with:
           workspaces: src-tauri
           key: integration
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
@@ -156,3 +199,23 @@ jobs:
         run: bash scripts/test-integration.sh
       - if: failure()
         run: docker compose --profile sasl logs
+
+  # One stable check for branch protection: jobs the plan skips report as
+  # "skipped", so require this instead of the individual jobs.
+  result:
+    name: CI result
+    needs: [plan, frontend, rust, kerberos, integration]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All planned jobs passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          for result in $RESULTS; do
+            case "$result" in
+              success|skipped) ;;
+              *) echo "A job finished with: $result"; exit 1 ;;
+            esac
+          done

@@ -106,3 +106,20 @@ npm run check:tauri-versions
 
 Tauri Rust crates and their `@tauri-apps/*` npm packages must share the same
 major.minor version. Bump them together.
+
+## CI
+
+`.github/scripts/ci-plan.sh` decides what each run builds:
+
+- **Pull requests** run only the checks for what changed (frontend, Rust or
+  both). Rust runs clippy and tests on Linux, Windows and macOS arm64, and
+  builds no installers.
+- **Pushes to `main`** run everything and build installers for Linux, Windows
+  and macOS arm64.
+- **`v*` tags** also build the macOS x86_64 installer.
+- **Manual runs** (Actions → CI → Run workflow) take a comma-separated platform
+  list, e.g. `windows-x86_64`, and can build installers on request.
+- A weekly scheduled run covers Linux and the Kerberos build.
+
+Branch protection should require the **CI result** check, which passes when
+every planned job passed and ignores jobs the plan skipped.
